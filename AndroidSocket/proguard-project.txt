@@ -18,3 +18,16 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# I use Google Guava in my app
+# see http://code.google.com/p/guava-libraries/wiki/UsingProGuardWithGuava
+-dontwarn sun.misc.Unsafe
+-dontwarn com.google.common.collect.MinMaxPriorityQueue
+-dontnote javax.annotation.*
+-dontnote javax.annotation.concurrent.*
+-dontnote javax.annotation.meta.*
+
+# Additionally
+-dontnote com.google.common.util.concurrent.MoreExecutors
+-dontnote com.google.vending.licensing.ILicensingService
+-dontnote com.android.vending.licensing.ILicensingService
