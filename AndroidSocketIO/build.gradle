@@ -1,0 +1,111 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.4'
+    }
+}
+
+apply plugin: 'android-library'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "http://192.158.30.128/repository/"
+    }
+}
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    compile "com.google.guava:guava:14.+"
+    compile "com.google.code.findbugs:jsr305:2.0.1"
+    compile "javax.inject:javax.inject:1"
+}
+
+version = "1.0"
+archivesBaseName = "ausocketio"
+group = "com.appunite"
+
+android {
+    compileSdkVersion 18
+    buildToolsVersion "18"
+
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 18
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+
+        instrumentTest.setRoot('tests')
+    }
+}
+
+task createPomFile {
+    project.ext.pomFile = pom {
+        version = project.version
+        artifactId = project.archivesBaseName
+        groupId = project.group
+        project {
+            name 'AUSocketIO'
+            description 'Android socketio/websocket library.'
+            url 'https://github.com/jacek-marchwicki/AndroidSocketIO'
+            inceptionYear '2012'
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            scm {
+                url "https://github.com/jacek-marchwicki/AndroidSocketIO"
+                connection "https://github.com/jacek-marchwicki/AndroidSocketIO.git"
+            }
+            developers {
+                developer {
+                    name 'Jacek Marchwicki <jacek.marchwicki@gmail.com>'
+                }
+            }
+        }
+    }
+}
+
+task install(type: Upload, dependsOn: createPomFile) {
+    description = "Upload archives to local repository"
+    configuration = configurations.archives
+    repositories.mavenInstaller {
+        pom = project.ext.pomFile
+    }
+}
+
+uploadArchives {
+    description = "Upload archives to maven repository"
+    dependsOn createPomFile
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: "sftp://mavenrepo@192.158.30.128/repository/") {
+                authentication(userName: "mavenrepo")
+            }
+            pom = project.ext.pomFile
+        }
+    }
+}

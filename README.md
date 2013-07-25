@@ -2,7 +2,11 @@
 AndroidAUSocketIO is library providing socketio/websocket connection form Android.
 It is designed to be fast and fault tolerant.
 
-# Run an example
+# Run example from gradle
+
+./gradlew installDebug
+
+# Run an example from eclipse
 
 run this command:
 
