@@ -38,7 +38,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Base class for {@link SocketIO}. Its ask socketio server for websocket
+ * Base class for {@link SocketIO}. Its ask socketIO server for websocket
  * connection.
  * 
  * @author Jacek Marchwicki <jacek.marchwicki@gmail.com>

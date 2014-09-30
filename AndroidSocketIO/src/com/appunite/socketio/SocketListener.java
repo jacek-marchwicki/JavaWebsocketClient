@@ -35,7 +35,7 @@ public interface SocketListener {
 	/**
 	 * Occurs when connection was established. Called on Socket thread
 	 * 
-	 * @param socketWriter
+	 * @param socketWriter socket writer
 	 * @throws IOException
 	 *             can be thrown when socket exception occur
 	 * @throws InterruptedException
@@ -100,7 +100,7 @@ public interface SocketListener {
 	 * 
 	 * Called on socket thread.
 	 * 
-	 * @param object
+	 * @param object received json message
 	 * @throws IOException
 	 *             can be thrown when socket exception occur
 	 * @throws InterruptedException
@@ -116,7 +116,7 @@ public interface SocketListener {
 	 * 
 	 * Called on socket thread.
 	 * 
-	 * @param string
+	 * @param string received string message
 	 * @throws IOException
 	 *             can be thrown when socket exception occur
 	 * @throws InterruptedException
@@ -133,7 +133,7 @@ public interface SocketListener {
 	 * 
 	 * Called on socket thread.
 	 * 
-	 * @param messageData
+	 * @param messageData received message data
 	 * @throws IOException
 	 *             can be thrown when socket exception occur
 	 * @throws InterruptedException
@@ -148,30 +148,30 @@ public interface SocketListener {
 	 * {@link WrongSocketIOResponse} exception occurs client would be
 	 * disconnected
 	 * 
-	 * @param exception
+	 * @param exception received exception
 	 */
-	public void onNetworkError(WrongSocketIOResponse e);
+	public void onNetworkError(WrongSocketIOResponse exception);
 
 	/**
 	 * {@link IOException} exception occurs client would be disconnected
 	 * 
-	 * @param exception
+	 * @param exception received exception
 	 */
-	public void onNetworkError(IOException e);
+	public void onNetworkError(IOException exception);
 
 	/**
 	 * {@link WrongWebsocketResponse} exception occurs client would be
 	 * disconnected
 	 * 
-	 * @param exception
+	 * @param exception received exception
 	 */
-	public void onNetworkError(WrongHttpResponseCode e);
+	public void onNetworkError(WrongHttpResponseCode exception);
 
 	/**
 	 * {@link WrongWebsocketResponse} exception occurs client would be
 	 * disconnected
 	 * 
-	 * @param exception
+	 * @param exception received exception
 	 */
 	public void onNetworkError(WrongWebsocketResponse exception);
 

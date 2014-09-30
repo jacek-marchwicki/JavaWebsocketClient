@@ -26,6 +26,9 @@ import android.util.Log;
 
 import com.appunite.socketio.helpers.HTTPUtils.WrongHttpResponseCode;
 import com.appunite.websocket.WrongWebsocketResponse;
+
+import javax.annotation.Nonnull;
+
 import static com.google.common.base.Preconditions.*;
 
 /**
@@ -50,18 +53,18 @@ abstract class SocketBase implements Runnable {
 		}
 
 		@Override
-		public void dispatchMessage(Message msg) {
+		public void dispatchMessage(@Nonnull Message msg) {
 			mSocketBase.handlerMessage(msg);
 		}
 
 	}
 
-	private Object mStartStopLock = new Object();
+	private final Object mStartStopLock = new Object();
 	private Thread mThread = null;
 
 	protected final SocketListener mListener;
 
-	protected Object mInterruptionLock = new Object();
+	protected final Object mInterruptionLock = new Object();
 	protected boolean mInterrupted = true;
 
 	private SocketHandler mHandler;
@@ -75,7 +78,7 @@ abstract class SocketBase implements Runnable {
 	/**
 	 * Receive message on connect method thread
 	 * 
-	 * @param msg
+	 * @param msg message
 	 */
 	public abstract void handlerMessage(Message msg);
 
@@ -85,7 +88,7 @@ abstract class SocketBase implements Runnable {
 	public void connect() {
 		synchronized (mStartStopLock) {
 			checkState(mThread == null, "You are already connected/connecting");
-			assert (mInterrupted == true);
+			checkState(mInterrupted);
 			mInterrupted = false;
 			mHandler = new SocketHandler(this);
 			mThread = new Thread(this);
@@ -112,7 +115,8 @@ abstract class SocketBase implements Runnable {
 	 * 
 	 * (Thread safe)
 	 */
-	public void disconnectAsyncIfAlive() {
+	@SuppressWarnings("UnusedDeclaration")
+    public void disconnectAsyncIfAlive() {
 		new Thread(new Runnable() {
 
 			@Override
@@ -139,7 +143,7 @@ abstract class SocketBase implements Runnable {
 				throw new RuntimeException(
 						"disconnectIfAlive could not be called from socket thread");
 			}
-			assert (mInterrupted == false);
+			checkState(!mInterrupted);
 			synchronized (mInterruptionLock) {
 				mInterrupted = true;
 				interrupt();
@@ -149,7 +153,7 @@ abstract class SocketBase implements Runnable {
 					mThread.join();
 					// Loop until success
 					break;
-				} catch (InterruptedException e) {
+				} catch (InterruptedException ignore) {
 				}
 			}
 			mHandler.removeCallbacksAndMessages(null);
@@ -166,7 +170,7 @@ abstract class SocketBase implements Runnable {
 			synchronized (mInterruptionLock) {
 				boolean reconnect = mListener.onDisconnected(mInterrupted);
 				if (mInterrupted) {
-					checkState(reconnect == false,
+					checkState(!reconnect,
 							"If disconnection is forced by user reconnect value should be always false");
 				}
 				if (!reconnect)

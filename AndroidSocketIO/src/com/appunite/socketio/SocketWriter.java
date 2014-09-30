@@ -49,7 +49,8 @@ public interface SocketWriter {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	public void sendJsonMessage(String messageEndpoint, JSONObject object) throws IOException,
+	@SuppressWarnings("UnusedDeclaration")
+    public void sendJsonMessage(String messageEndpoint, JSONObject object) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -62,6 +63,7 @@ public interface SocketWriter {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
+    @SuppressWarnings("UnusedDeclaration")
 	public void sendJsonEvent(String messageEndpoint, String name, JSONArray args) throws IOException,
 			InterruptedException, NotConnectedException;
 

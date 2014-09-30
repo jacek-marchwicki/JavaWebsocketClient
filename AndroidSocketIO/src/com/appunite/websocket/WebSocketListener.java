@@ -49,7 +49,7 @@ public interface WebSocketListener {
 
 	/**
 	 * On received binary data
-	 * @param data
+	 * @param data binary data
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws NotConnectedException

@@ -99,7 +99,8 @@ public class SocketIO extends SocketIOBase implements WebSocketListener,
 		sendMessage(new IOMessage(IOMessage.MSG_CONNECT, "", endpoint));
 	}
 	
-	@Override
+	@SuppressWarnings("StatementWithEmptyBody")
+    @Override
 	public void onStringMessage(String message) throws IOException,
 			InterruptedException, NotConnectedException {
 		try {
@@ -108,7 +109,7 @@ public class SocketIO extends SocketIOBase implements WebSocketListener,
 			}
 			IOMessage msg = IOMessage.parse(message);
 			redelayKill();
-			if (msg.mMessageType == IOMessage.MSG_DISCONNECT) {
+            if (msg.mMessageType == IOMessage.MSG_DISCONNECT) {
 				// TODO Im not quite sure what we have to do if we will receive
 				// message like this - maybe we will implement this later
 			} else if (msg.mMessageType == IOMessage.MSG_CONNECT) {
@@ -250,8 +251,8 @@ public class SocketIO extends SocketIOBase implements WebSocketListener,
 	@Override
 	public void sendJsonMessage(String messageEndpoint, JSONObject object) throws IOException,
 			InterruptedException, NotConnectedException {
-		checkArgument(object != null, "Object could not be null");
-		checkArgument(messageEndpoint != null, "Message endpoint could not be null");
+		checkNotNull(object, "Object could not be null");
+        checkNotNull(messageEndpoint, "Message endpoint could not be null");
 		IOMessage msg = new IOMessage(IOMessage.MSG_MESSAGE, "", messageEndpoint,
 				object.toString());
 		sendMessage(msg);
@@ -263,9 +264,9 @@ public class SocketIO extends SocketIOBase implements WebSocketListener,
 	@Override
 	public void sendJsonEvent(String messageEndpoint, String name, JSONArray args) throws IOException,
 			InterruptedException, NotConnectedException {
-		checkArgument(messageEndpoint != null, "Message endpoint could not be null");
-		checkArgument(args != null, "Args could not be null");
-		checkArgument(name != null, "Name could not be null");
+        checkNotNull(messageEndpoint, "Message endpoint could not be null");
+        checkNotNull(args, "Args could not be null");
+        checkNotNull(name, "Name could not be null");
 		checkArgument(!DISALLOWED_NAMES.contains(name),
 				"Name could not be one of the reserved values: "
 						+ DISALLOWED_NAMES.toString());

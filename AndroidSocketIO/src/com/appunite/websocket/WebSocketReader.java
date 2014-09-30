@@ -53,7 +53,7 @@ class WebSocketReader {
 		while (length > 0) {
 			int read = mInputStream.read(buffer, offset, length);
 			if (read == -1) {
-				// maybe retrurn closed conection exception
+				// maybe return closed connection exception
 				throw new WrongWebsocketResponse("Socket closed");
 			}
 			offset += read;
@@ -75,10 +75,9 @@ class WebSocketReader {
 			int read = mInputStream.read();
 			if (read == -1) {
 				throw new WrongWebsocketResponse("Empty response from server");
-			} else if (read == '\r') {
 			} else if (read == '\n') {
 				return string.toString();
-			} else {
+			} else if (read != '\r') {
 				string.append((char) read);
 			}
 		}

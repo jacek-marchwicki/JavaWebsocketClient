@@ -17,6 +17,7 @@
 package com.appunite.socketio;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 import com.google.common.base.Optional;
@@ -55,9 +56,9 @@ class IOMessage {
 	}
 	
 	public IOMessage(int messageType, String messageId, String messageEndpoint) {
-		checkArgument(MSG_DISCONNECT >= 0 && messageType <= MSG_NOP, "Unknown message type");
-		checkArgument(messageId != null, "message could not be null");
-		checkArgument(messageEndpoint != null, "message endpoint could not be null");
+		checkArgument((messageType >= MSG_DISCONNECT) && (messageType <= MSG_NOP), "Unknown message type");
+		checkNotNull(messageId, "message could not be null");
+        checkNotNull(messageEndpoint, "message endpoint could not be null");
 		this.mMessageType = messageType;
 		this.mMessageId = messageId;
 		this.mMessageEndpoint = messageEndpoint;
@@ -65,10 +66,10 @@ class IOMessage {
 	}
 	
 	public IOMessage(int messageType, String messageId, String messageEndpoint, String messageData) {
-		checkArgument(MSG_DISCONNECT >= 0 && messageType <= MSG_NOP, "Unknown message type");
-		checkArgument(messageId != null, "message could not be null");
-		checkArgument(messageEndpoint != null, "message endpoint could not be null");
-		checkArgument(messageData != null, "messag could not be null");
+		checkArgument(messageType >= MSG_DISCONNECT && messageType <= MSG_NOP, "Unknown message type");
+        checkNotNull(messageId, "message could not be null");
+        checkNotNull(messageEndpoint, "message endpoint could not be null");
+        checkNotNull(messageData, "messag could not be null");
 		this.mMessageType = messageType;
 		this.mMessageId = messageId;
 		this.mMessageEndpoint = messageEndpoint;
@@ -77,22 +78,15 @@ class IOMessage {
 	
 	@Override
 	public String toString() {
-		return new StringBuilder().append("Type: ").append(mMessageType)
-				.append(", Id: ").append(mMessageId).append(", Endpoint: ")
-				.append(mMessageEndpoint).append(", Data: ")
-				.append(mMessageData).toString();
+		return "Type: " + mMessageType + ", Id: " + mMessageId + ", Endpoint: " + mMessageEndpoint + ", Data: " + mMessageData;
 	}
 
 	public String getMessage() {
-		return new StringBuilder().append(mMessageType).append(':')
-				.append(mMessageId)
-				.append(':').append(mMessageEndpoint).append(':')
-				.append(mMessageData.isPresent() ? mMessageData.get() : "")
-				.toString();
+		return String.valueOf(mMessageType) + ':' + mMessageId + ':' + mMessageEndpoint + ':' + (mMessageData.isPresent() ? mMessageData.get() : "");
 	}
 
 	public static IOMessage parse(String message) throws WrongSocketIOResponse {
-		checkArgument(message != null, "Message should not be null");
+		checkNotNull(message, "Message should not be null");
 		int messageTypeEnd = message.indexOf(':');
 		if (messageTypeEnd < 1) {
 			throw new WrongSocketIOResponse("Wrong response from socket io");
