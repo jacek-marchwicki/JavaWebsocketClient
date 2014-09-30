@@ -17,6 +17,7 @@
 package com.appunite.websocket;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -33,11 +34,10 @@ class WebSocketReader {
 		this.mInputStream = new DataInputStream(inputStream);
 	}
 
-	public int readByteOrThrow() throws IOException, WrongWebsocketResponse {
+	public int readByteOrThrow() throws IOException {
 		int read = mInputStream.read();
 		if (read == -1) {
-			// Maybe we should return ConnectionClosed
-			throw new WrongWebsocketResponse("Socket closed");
+			throw new EOFException("Socket closed");
 		}
 		return read;
 	}

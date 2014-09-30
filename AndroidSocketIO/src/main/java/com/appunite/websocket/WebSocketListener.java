@@ -34,7 +34,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onConnected() throws IOException, InterruptedException,
+	public void onConnected() throws IOException, InterruptedException,
 			NotConnectedException;
 
 	/**
@@ -44,7 +44,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onStringMessage(String message) throws IOException,
+    public void onStringMessage(String message) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -54,7 +54,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onBinaryMessage(byte[] data) throws IOException,
+    public void onBinaryMessage(byte[] data) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -64,7 +64,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onPing(byte[] data) throws IOException, InterruptedException,
+    public void onPing(byte[] data) throws IOException, InterruptedException,
 			NotConnectedException;
 
 	/**
@@ -74,7 +74,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onPong(byte[] data) throws IOException, InterruptedException,
+    public void onPong(byte[] data) throws IOException, InterruptedException,
 			NotConnectedException;
 
 	/**
@@ -84,7 +84,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onServerRequestedClose(byte[] data) throws IOException,
+    public void onServerRequestedClose(byte[] data) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -94,7 +94,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onUnknownMessage(byte[] data) throws IOException,
+    public void onUnknownMessage(byte[] data) throws IOException,
 			InterruptedException, NotConnectedException;
 
 }
