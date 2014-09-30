@@ -33,6 +33,9 @@ proguard-project.txt
 .gradle
 build
 
+#Secrets
+credentials.properties
+
 #Other
 .DS_Store
 tmp

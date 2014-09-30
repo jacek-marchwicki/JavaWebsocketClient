@@ -3,16 +3,15 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
+        classpath 'com.android.tools.build:gradle:0.13.+'
     }
 }
-apply plugin: 'android'
+
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
-    maven {
-        url "http://192.158.30.128/repository/"
-    }
+    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
 }
 
 dependencies {
@@ -21,12 +20,12 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18"
+    compileSdkVersion 19
+    buildToolsVersion "19.1"
 
     defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 18
+        minSdkVersion 8
+        targetSdkVersion 19
     }
     buildTypes {
         release {

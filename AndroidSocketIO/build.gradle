@@ -3,18 +3,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
+        classpath 'com.android.tools.build:gradle:0.13.+'
     }
 }
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 repositories {
     mavenCentral()
-    maven {
-        url "http://192.158.30.128/repository/"
-    }
+    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
 }
 
 configurations {
@@ -22,23 +20,33 @@ configurations {
 }
 
 dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    deployerJars 'com.googlesource.gerrit:gs-maven-wagon:3.3.1'
     compile "com.google.guava:guava:14.+"
     compile "com.google.code.findbugs:jsr305:2.0.1"
     compile "javax.inject:javax.inject:1"
 }
 
-version = "1.0"
+def baseVersionName = "1.1"
+if (project.hasProperty("versionSuffix")) {
+    project.ext.versionSuffix = project.versionSuffix
+} else {
+    project.ext.versionSuffix = "snapshot"
+}
+if (project.ext.versionSuffix) {
+    version = "${baseVersionName}-${project.versionSuffix}"
+} else {
+    version = "${baseVersionName}"
+}
 archivesBaseName = "ausocketio"
 group = "com.appunite"
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18"
+    compileSdkVersion 19
+    buildToolsVersion "19.1"
 
     defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 18
+        minSdkVersion 8
+        targetSdkVersion 19
     }
 
     sourceSets {
@@ -96,16 +104,23 @@ task install(type: Upload, dependsOn: createPomFile) {
     }
 }
 
+Properties props = new Properties()
+def credentialsProperties = file("credentials.properties")
+if (credentialsProperties.exists()) {
+        props.load(new FileInputStream(credentialsProperties))
+}
+
 uploadArchives {
     description = "Upload archives to maven repository"
     dependsOn createPomFile
-    repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: "sftp://mavenrepo@192.158.30.128/repository/") {
-                authentication(userName: "mavenrepo")
-            }
-            pom = project.ext.pomFile
+    repositories.mavenDeployer {
+        configuration = configurations.deployerJars
+        repository(url: "gs://maven-repository") {
+            authentication(
+            userName: "${props.getProperty('mavenUser', null)}" ,
+            password: "${props.getProperty('mavenPassword', null)}")
         }
+        pom = project.ext.pomFile
     }
 }
+
