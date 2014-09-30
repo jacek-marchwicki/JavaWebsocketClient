@@ -39,7 +39,7 @@ public class SocketIOTest extends AndroidTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		
-		mUrl = new GetBuilder("http://your_server:1000/socket.io/1/")
+		mUrl = new GetBuilder("http://www.appunite.com:1000/socket.io/1/")
 				.addParam("campaign", "test").addParam("player", "test")
 				.build();
 	}

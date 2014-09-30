@@ -14,14 +14,5 @@
     <application android:label="Test" >
         <uses-library android:name="android.test.runner" />
     </application>
-    <!--
-    This declares that this application uses the instrumentation test runner targeting
-    the package of io.socket.  To run the tests use the command:
-    "adb shell am instrument -w io.socket.tests/android.test.InstrumentationTestRunner"
-    -->
-    <instrumentation
-        android:name="android.test.InstrumentationTestRunner"
-        android:label="Tests for io.socket"
-        android:targetPackage="io.socket.tests" />
 
 </manifest>
