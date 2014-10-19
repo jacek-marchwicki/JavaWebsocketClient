@@ -52,6 +52,52 @@ import com.google.common.collect.Lists;
  * 
  */
 public class WebSocket {
+
+    public static class SecureRandomProvider {
+
+        private boolean mError = false;
+        private SecureRandom mSecureRandom;
+
+
+        public synchronized Optional<SecureRandom> getSecureRandom() {
+            if (mError) {
+                return Optional.absent();
+            }
+            if (mSecureRandom != null) {
+                return Optional.of(mSecureRandom);
+            }
+            try {
+                mSecureRandom = SecureRandom.getInstance("SHA1PRNG");
+                return Optional.of(mSecureRandom);
+            } catch (NoSuchAlgorithmException e) {
+                // if we do not have secure random we have to leave data unmasked
+                mError = true;
+                return Optional.absent();
+            }
+        }
+
+        public synchronized String generateHandshakeSecret() {
+            final Optional<SecureRandom> secureRandom = getSecureRandom();
+
+            byte[] nonce = new byte[16];
+            if (secureRandom.isPresent()) {
+                secureRandom.get().nextBytes(nonce);
+            } else {
+                Arrays.fill(nonce, (byte) 0);
+            }
+            return Base64.encodeToString(nonce, Base64.NO_WRAP);
+        }
+
+        public synchronized Optional<byte[]> generateMask() {
+            final Optional<SecureRandom> secureRandom = getSecureRandom();
+            if (!secureRandom.isPresent())
+                return Optional.absent();
+
+            byte[] bytes = new byte[4];
+            secureRandom.get().nextBytes(bytes);
+            return Optional.of(bytes);
+        }
+    }
 	
 	// WebSocket states
 	private enum State {
@@ -82,8 +128,7 @@ public class WebSocket {
 	// Not need to be locked
 	private final WebSocketListener mListener;
 
-	// Should be locked via self
-	private final Optional<SecureRandom> mSecureRandom;
+    private final SecureRandomProvider mSecureRandomProvider;
 
 	private final Object mLockObj = new Object(); // 1
 
@@ -116,19 +161,7 @@ public class WebSocket {
 	public WebSocket(WebSocketListener listener) {
 		checkArgument(listener != null, "Lister cannot be null");
 		this.mListener = listener;
-
-		SecureRandom secureRandom;
-		try {
-			secureRandom = SecureRandom.getInstance("SHA1PRNG");
-		} catch (NoSuchAlgorithmException e) {
-			// if we do not have secure random we have to leave data unmasked
-			secureRandom = null;
-		}
-		if (secureRandom == null) {
-			mSecureRandom = Optional.absent();
-		} else {
-			mSecureRandom = Optional.of(secureRandom);
-		}
+        mSecureRandomProvider = new SecureRandomProvider();
 	}
 
 	/**
@@ -421,14 +454,7 @@ public class WebSocket {
 	 * @return 4 bit random mask
 	 */
 	private Optional<byte[]> generateMask() {
-		synchronized (mSecureRandom) {
-			if (!mSecureRandom.isPresent())
-				return Optional.absent();
-
-			byte[] bytes = new byte[4];
-			mSecureRandom.get().nextBytes(bytes);
-			return Optional.of(bytes);
-		}
+		return mSecureRandomProvider.generateMask();
 	}
 
 	/**
@@ -699,15 +725,7 @@ public class WebSocket {
 	 * @return random handshake key
 	 */
 	private String generateHandshakeSecret() {
-		synchronized (mSecureRandom) {
-			byte[] nonce = new byte[16];
-			if (mSecureRandom.isPresent()) {
-				mSecureRandom.get().nextBytes(nonce);
-			} else {
-				Arrays.fill(nonce, (byte) 0);
-			}
-			return Base64.encodeToString(nonce, Base64.NO_WRAP);
-		}
+        return mSecureRandomProvider.generateHandshakeSecret();
 	}
 
 	/**

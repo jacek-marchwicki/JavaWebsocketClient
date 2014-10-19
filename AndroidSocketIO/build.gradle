@@ -29,7 +29,7 @@ dependencies {
     androidTestCompile fileTree(dir: 'src/androidTest/libs', include: '*.jar')
 }
 
-def baseVersionName = "1.1.2"
+def baseVersionName = "1.1.3"
 if (project.hasProperty("versionSuffix")) {
     project.ext.versionSuffix = project.versionSuffix
 } else {
