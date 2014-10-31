@@ -392,32 +392,32 @@ public class WebSocket {
 	 */
 	private void doRead() throws IOException, WrongWebsocketResponse,
 			InterruptedException, NotConnectedException {
-		int first = mInputStream.readByteOrThrow();
-		int reserved = first & RESERVED;
+		final int first = mInputStream.readByteOrThrow();
+		final int reserved = first & RESERVED;
 		if (reserved != 0) {
 			throw new WrongWebsocketResponse(
 					"Server expected some negotiation that is not supported");
 		}
-		boolean fin = (first & FIN) != 0;
-		int opcode = first & OPCODE;
-		int second = mInputStream.readByteOrThrow();
-		boolean payload_mask = (second & PAYLOAD_MASK) != 0;
+		final boolean fin = (first & FIN) != 0;
+		final int opcode = first & OPCODE;
+		final int second = mInputStream.readByteOrThrow();
+		final boolean payloadMask = (second & PAYLOAD_MASK) != 0;
 
-		long payload_len = (second & (~PAYLOAD_MASK));
-		if (payload_len == 127) {
-			payload_len = mInputStream.read64Long();
-		} else if (payload_len == 126) {
-			payload_len = mInputStream.read16Int();
+		long payloadLen = (second & (~PAYLOAD_MASK));
+		if (payloadLen == 127) {
+			payloadLen = mInputStream.read64Long();
+		} else if (payloadLen == 126) {
+			payloadLen = mInputStream.read16Int();
 		}
-		Optional<byte[]> masking_key;
-		if (payload_mask) {
+		final Optional<byte[]> maskingKey;
+		if (payloadMask) {
 			byte[] mask_key = new byte[4];
 			mInputStream.readBytesOrThrow(mask_key);
-			masking_key = Optional.of(mask_key);
+			maskingKey = Optional.of(mask_key);
 		} else {
-			masking_key = Optional.absent();
+			maskingKey = Optional.absent();
 		}
-		readPayload(fin, opcode, masking_key, payload_len);
+		readPayload(fin, opcode, maskingKey, payloadLen);
 	}
 
 	/**
@@ -428,20 +428,20 @@ public class WebSocket {
 	 * @param fin Indicates that this is the final fragment in a message.  The first
      * fragment MAY also be the final fragment.
 	 * @param opcode Defines the interpretation of the "Payload data"
-	 * @param masking_key Defines whether the "Payload data" is masked.
-	 * @param payload_len The length of the "Payload data"
+	 * @param maskingKey Defines whether the "Payload data" is masked.
+	 * @param payloadLen The length of the "Payload data"
 	 * @throws WrongWebsocketResponse when there is an error in websocket message
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
     private void readPayload(boolean fin, int opcode,
-                             Optional<byte[]> masking_key,
-                             long payload_len)
+                             Optional<byte[]> maskingKey,
+                             long payloadLen)
             throws WrongWebsocketResponse, IOException, InterruptedException,
             NotConnectedException {
 
-        if (payload_len > 1024 * 1024 || payload_len < 0) {
+        if (payloadLen > 1024 * 1024 || payloadLen < 0) {
             throw new WrongWebsocketResponse("too large payload");
         }
         if (!fin) {
@@ -449,11 +449,11 @@ public class WebSocket {
 			throw new WrongWebsocketResponse(
 					"We do not support not continued frames");
 		}
-		byte[] payload = new byte[(int) payload_len];
+		byte[] payload = new byte[(int) payloadLen];
 		mInputStream.readBytesOrThrow(payload);
 
-        if (masking_key.isPresent()) {
-            maskBuffer(payload, masking_key.get());
+        if (maskingKey.isPresent()) {
+            maskBuffer(payload, maskingKey.get());
         }
 
 		if (opcode == OPCODE_CONTINUED_FRAME) {
