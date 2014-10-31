@@ -277,6 +277,30 @@ public class WebSocket {
 		sendMessage(OPCODE_BINARY_FRAME, generateMask(), buffer);
 	}
 
+    /**
+     * Send ping request (thread safe). Can be called after onConnect and
+     * before onDisconnect by any thread. Thread will be blocked until send
+     *
+     * @param buffer
+     *            buffer to send
+     * @throws IOException
+     *             when exception occur while sending
+     * @throws InterruptedException
+     *             when user call disconnect
+     * @throws NotConnectedException
+     *             when called before onConnect or after onDisconnect
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    public void sendPingMessage(byte[] buffer) throws IOException,
+            InterruptedException, NotConnectedException {
+        sendMessage(OPCODE_PING_FRAME, generateMask(), buffer);
+    }
+
+    private void sendPongMessage(byte[] buffer) throws IOException,
+            InterruptedException, NotConnectedException {
+        sendMessage(OPCODE_PONG_FRAME, generateMask(), buffer);
+    }
+
 	/**
 	 * Send text message (thread safe). Can be called after onConnect and before
 	 * onDisconnect by any thread. Thread will be blocked until send
@@ -416,6 +440,7 @@ public class WebSocket {
                              long payload_len)
             throws WrongWebsocketResponse, IOException, InterruptedException,
             NotConnectedException {
+
         if (payload_len > 1024 * 1024 || payload_len < 0) {
             throw new WrongWebsocketResponse("too large payload");
         }
@@ -426,6 +451,10 @@ public class WebSocket {
 		}
 		byte[] payload = new byte[(int) payload_len];
 		mInputStream.readBytesOrThrow(payload);
+
+        if (masking_key.isPresent()) {
+            maskBuffer(payload, masking_key.get());
+        }
 
 		if (opcode == OPCODE_CONTINUED_FRAME) {
 			// TODO
@@ -439,16 +468,16 @@ public class WebSocket {
 		} else if (opcode == OPCODE_CONNECTION_CLOSE_FRAME) {
 			mListener.onServerRequestedClose(payload);
 		} else if (opcode == OPCODE_PONG_FRAME) {
-			mListener.onPing(payload);
-			sendMessage(OPCODE_PONG_FRAME, generateMask(), payload);
-		} else if (opcode == OPCODE_PING_FRAME) {
 			mListener.onPong(payload);
+		} else if (opcode == OPCODE_PING_FRAME) {
+			mListener.onPing(payload);
+            sendPongMessage(payload);
 		} else {
 			mListener.onUnknownMessage(payload);
 		}
 	}
 
-	/**
+    /**
 	 * Generate 4 bit random mask to send message (thread safe)
 	 * 
 	 * @return 4 bit random mask
@@ -465,7 +494,7 @@ public class WebSocket {
 	 * @param mask
 	 *            4 byte length mask to apply
 	 */
-	private void maskBuffer(byte[] buffer, byte[] mask) {
+	 void maskBuffer(byte[] buffer, byte[] mask) {
 		checkNotNull(mask);
         checkNotNull(buffer);
 		checkArgument(mask.length == 4);
