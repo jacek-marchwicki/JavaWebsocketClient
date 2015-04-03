@@ -1,0 +1,10 @@
+sudo: false
+language: android
+
+android:
+  components:
+    - build-tools-19.1.0
+    - android-19
+    - extra-google-m2repository
+    - extra-android-m2repository
+script: ./gradlew build
