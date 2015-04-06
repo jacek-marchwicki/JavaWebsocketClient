@@ -1,0 +1,35 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+    }
+}
+
+apply plugin: 'com.android.application'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
+}
+
+dependencies {
+    compile project(":websockets")
+    //compile "com.appunite:websockets:1.0"
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 22
+    }
+    buildTypes {
+        release {
+            proguardFiles = [getDefaultProguardFile('proguard-android.txt'), 'src/main/proguard-project.txt']
+        }
+    }
+}
