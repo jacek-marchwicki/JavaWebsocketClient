@@ -55,23 +55,23 @@ public class WebSocket {
 
     public static class SecureRandomProvider {
 
-        private boolean mError = false;
-        private SecureRandom mSecureRandom;
+        private boolean error = false;
+        private SecureRandom secureRandom;
 
 
         public synchronized Optional<SecureRandom> getSecureRandom() {
-            if (mError) {
+            if (error) {
                 return Optional.absent();
             }
-            if (mSecureRandom != null) {
-                return Optional.of(mSecureRandom);
+            if (secureRandom != null) {
+                return Optional.of(secureRandom);
             }
             try {
-                mSecureRandom = SecureRandom.getInstance("SHA1PRNG");
-                return Optional.of(mSecureRandom);
+                secureRandom = SecureRandom.getInstance("SHA1PRNG");
+                return Optional.of(secureRandom);
             } catch (NoSuchAlgorithmException e) {
                 // if we do not have secure random we have to leave data unmasked
-                mError = true;
+                error = true;
                 return Optional.absent();
             }
         }
@@ -126,31 +126,31 @@ public class WebSocket {
 	private static final int OPCODE_PONG_FRAME = 0x0A;
 
 	// Not need to be locked
-	private final WebSocketListener mListener;
+	private final WebSocketListener listener;
 
-    private final SecureRandomProvider mSecureRandomProvider;
+    private final SecureRandomProvider secureRandomProvider;
 
-	private final Object mLockObj = new Object(); // 1
+	private final Object lockObj = new Object(); // 1
 
-	// Locked via mLockObj
-	private State mState = State.DISCONNECTED;
+	// Locked via lockObj
+	private State state = State.DISCONNECTED;
 
-	// Locked via mLockObj
+	// Locked via lockObj
 	// only accessable while CONNECTING/CONNECTED
-	private Socket mSocket;
+	private Socket socket;
 
-	// Locked via mLockObj
+	// Locked via lockObj
 	// only accessable while CONNECTED
-	private WebSocketReader mInputStream;
+	private WebSocketReader inputStream;
 
-	// Locked via mLockObj
+	// Locked via lockObj
 	// only accessable while CONNECTED
-	private WebSocketWriter mOutputStream;
+	private WebSocketWriter outputStream;
 
-	private final Object mWriteLock = new Object(); // 2
+	private final Object writeLock = new Object(); // 2
 
-	// Locked via mWriteLock
-	private int mWriting = 0;
+	// Locked via writeLock
+	private int writing = 0;
 
 	/**
 	 * Create instance of WebSocket
@@ -160,8 +160,8 @@ public class WebSocket {
 	 */
 	public WebSocket(WebSocketListener listener) {
 		checkArgument(listener != null, "Lister cannot be null");
-		this.mListener = listener;
-        mSecureRandomProvider = new SecureRandomProvider();
+		this.listener = listener;
+        secureRandomProvider = new SecureRandomProvider();
 	}
 
 	/**
@@ -183,8 +183,8 @@ public class WebSocket {
 			WrongWebsocketResponse, InterruptedException {
 		checkNotNull(uri, "Uri cannot be null");
 		try {
-			synchronized (mLockObj) {
-				checkState(State.DISCONNECTED.equals(mState),
+			synchronized (lockObj) {
+				checkState(State.DISCONNECTED.equals(state),
 						"connect could be called only if disconnected");
 				SocketFactory factory;
 				if (isSsl(uri)) {
@@ -192,68 +192,68 @@ public class WebSocket {
 				} else {
 					factory = SocketFactory.getDefault();
 				}
-				mSocket = factory.createSocket();
-				mState = State.CONNECTING;
-				mLockObj.notifyAll();
+				socket = factory.createSocket();
+				state = State.CONNECTING;
+				lockObj.notifyAll();
 			}
 
-			mSocket.connect(new InetSocketAddress(uri.getHost(), getPort(uri)));
+			socket.connect(new InetSocketAddress(uri.getHost(), getPort(uri)));
 
-			mInputStream = new WebSocketReader(mSocket.getInputStream());
-			mOutputStream = new WebSocketWriter(mSocket.getOutputStream());
+			inputStream = new WebSocketReader(socket.getInputStream());
+			outputStream = new WebSocketWriter(socket.getOutputStream());
 
 			String secret = generateHandshakeSecret();
 			writeHeaders(uri, secret);
 			readHandshakeHeaders(secret);
 		} catch (IOException e) {
-			synchronized (mLockObj) {
-				if (State.DISCONNECTING.equals(mState)) {
+			synchronized (lockObj) {
+				if (State.DISCONNECTING.equals(state)) {
 					throw new InterruptedException();
 				} else {
 					throw e;
 				}
 			}
 		} finally {
-			synchronized (mLockObj) {
-				mState = State.DISCONNECTED;
-				mLockObj.notifyAll();
+			synchronized (lockObj) {
+				state = State.DISCONNECTED;
+				lockObj.notifyAll();
 			}
 		}
 
 		try {
-			synchronized (mLockObj) {
-				mState = State.CONNECTED;
-				mLockObj.notifyAll();
+			synchronized (lockObj) {
+				state = State.CONNECTED;
+				lockObj.notifyAll();
 			}
-			mListener.onConnected();
+			listener.onConnected();
 
             //noinspection InfiniteLoopStatement
             for (;;) {
 				doRead();
 			}
 		} catch (NotConnectedException e) {
-			synchronized (mLockObj) {
-				if (State.DISCONNECTING.equals(mState)) {
+			synchronized (lockObj) {
+				if (State.DISCONNECTING.equals(state)) {
 					throw new InterruptedException();
 				} else {
 					throw new RuntimeException();
 				}
 			}
 		} catch (IOException e) {
-			synchronized (mLockObj) {
-				if (State.DISCONNECTING.equals(mState)) {
+			synchronized (lockObj) {
+				if (State.DISCONNECTING.equals(state)) {
 					throw new InterruptedException();
 				} else {
 					throw e;
 				}
 			}
 		} finally {
-			synchronized (mLockObj) {
-				while (mWriting != 0) {
-					mLockObj.wait();
+			synchronized (lockObj) {
+				while (writing != 0) {
+					lockObj.wait();
 				}
-				mState = State.DISCONNECTED;
-				mLockObj.notifyAll();
+				state = State.DISCONNECTED;
+				lockObj.notifyAll();
 			}
 		}
 	}
@@ -370,16 +370,16 @@ public class WebSocket {
 	 * @throws IOException
 	 */
 	private void writeHeaders(URI uri, String secret) throws IOException {
-		mOutputStream.writeLine("GET " + uri.getPath() + " HTTP/1.1");
-		mOutputStream.writeLine("Upgrade: websocket");
-		mOutputStream.writeLine("Connection: Upgrade");
-		mOutputStream.writeLine("Host: " + uri.getHost());
-		mOutputStream.writeLine("Origin: " + uri);
-		mOutputStream.writeLine("Sec-WebSocket-Key: " + secret);
-		mOutputStream.writeLine("Sec-WebSocket-Protocol: chat");
-		mOutputStream.writeLine("Sec-WebSocket-Version: 13");
-		mOutputStream.writeNewLine();
-		mOutputStream.flush();
+		outputStream.writeLine("GET " + uri.getPath() + " HTTP/1.1");
+		outputStream.writeLine("Upgrade: websocket");
+		outputStream.writeLine("Connection: Upgrade");
+		outputStream.writeLine("Host: " + uri.getHost());
+		outputStream.writeLine("Origin: " + uri);
+		outputStream.writeLine("Sec-WebSocket-Key: " + secret);
+		outputStream.writeLine("Sec-WebSocket-Protocol: chat");
+		outputStream.writeLine("Sec-WebSocket-Version: 13");
+		outputStream.writeNewLine();
+		outputStream.flush();
 	}
 
 	/**
@@ -392,7 +392,7 @@ public class WebSocket {
 	 */
 	private void doRead() throws IOException, WrongWebsocketResponse,
 			InterruptedException, NotConnectedException {
-		final int first = mInputStream.readByteOrThrow();
+		final int first = inputStream.readByteOrThrow();
 		final int reserved = first & RESERVED;
 		if (reserved != 0) {
 			throw new WrongWebsocketResponse(
@@ -400,19 +400,19 @@ public class WebSocket {
 		}
 		final boolean fin = (first & FIN) != 0;
 		final int opcode = first & OPCODE;
-		final int second = mInputStream.readByteOrThrow();
+		final int second = inputStream.readByteOrThrow();
 		final boolean payloadMask = (second & PAYLOAD_MASK) != 0;
 
 		long payloadLen = (second & (~PAYLOAD_MASK));
 		if (payloadLen == 127) {
-			payloadLen = mInputStream.read64Long();
+			payloadLen = inputStream.read64Long();
 		} else if (payloadLen == 126) {
-			payloadLen = mInputStream.read16Int();
+			payloadLen = inputStream.read16Int();
 		}
 		final Optional<byte[]> maskingKey;
 		if (payloadMask) {
 			byte[] mask_key = new byte[4];
-			mInputStream.readBytesOrThrow(mask_key);
+			inputStream.readBytesOrThrow(mask_key);
 			maskingKey = Optional.of(mask_key);
 		} else {
 			maskingKey = Optional.absent();
@@ -450,7 +450,7 @@ public class WebSocket {
 					"We do not support not continued frames");
 		}
 		byte[] payload = new byte[(int) payloadLen];
-		mInputStream.readBytesOrThrow(payload);
+		inputStream.readBytesOrThrow(payload);
 
         if (maskingKey.isPresent()) {
             maskBuffer(payload, maskingKey.get());
@@ -462,18 +462,18 @@ public class WebSocket {
 					"We do not support not continued frames");
 		} else if (opcode == OPCODE_TEXT_FRAME) {
 			String message = new String(payload, "UTF-8");
-			mListener.onStringMessage(message);
+			listener.onStringMessage(message);
 		} else if (opcode == OPCODE_BINARY_FRAME) {
-			mListener.onBinaryMessage(payload);
+			listener.onBinaryMessage(payload);
 		} else if (opcode == OPCODE_CONNECTION_CLOSE_FRAME) {
-			mListener.onServerRequestedClose(payload);
+			listener.onServerRequestedClose(payload);
 		} else if (opcode == OPCODE_PONG_FRAME) {
-			mListener.onPong(payload);
+			listener.onPong(payload);
 		} else if (opcode == OPCODE_PING_FRAME) {
-			mListener.onPing(payload);
+			listener.onPing(payload);
             sendPongMessage(payload);
 		} else {
-			mListener.onUnknownMessage(payload);
+			listener.onUnknownMessage(payload);
 		}
 	}
 
@@ -483,7 +483,7 @@ public class WebSocket {
 	 * @return 4 bit random mask
 	 */
 	private Optional<byte[]> generateMask() {
-		return mSecureRandomProvider.generateMask();
+		return secureRandomProvider.generateMask();
 	}
 
 	/**
@@ -531,40 +531,40 @@ public class WebSocket {
 			throws IOException, InterruptedException, NotConnectedException {
         checkNotNull(buffer, "buffer should not be null");
 		checkNotNull(mask, "mask should not be null");
-		synchronized (mLockObj) {
-			if (!State.CONNECTED.equals(mState)) {
+		synchronized (lockObj) {
+			if (!State.CONNECTED.equals(state)) {
 				throw new NotConnectedException();
 			}
-			mWriting += 1;
+			writing += 1;
 		}
 		try {
-			synchronized (mWriteLock) {
+			synchronized (writeLock) {
 				sendHeader(true, opcode, mask, buffer.length);
 				if (mask.isPresent()) {
 					maskBuffer(buffer, mask.get());
 				}
-				mOutputStream.writeBytes(buffer);
-				mOutputStream.flush();
+				outputStream.writeBytes(buffer);
+				outputStream.flush();
 
 			}
 		} catch (IOException e) {
-			synchronized (mLockObj) {
-				if (State.DISCONNECTING.equals(mState)) {
+			synchronized (lockObj) {
+				if (State.DISCONNECTING.equals(state)) {
 					throw new InterruptedException();
 				} else {
 					throw e;
 				}
 			}
 		} finally {
-			synchronized (mLockObj) {
-				mWriting -= 1;
-				mLockObj.notifyAll();
+			synchronized (lockObj) {
+				writing -= 1;
+				lockObj.notifyAll();
 			}
 		}
 	}
 
 	/**
-	 * Send message header to output stream. Should be safed with mWriteLock and
+	 * Send message header to output stream. Should be safed with writeLock and
 	 * should append mWrite lock. Look at
 	 * {@link #sendMessage(int, Optional, byte[])}.
 	 * 
@@ -599,22 +599,22 @@ public class WebSocket {
 					"Mask have to contain 4 bytes");
 		}
 		int first = opcode | (fin ? FIN : 0);
-		mOutputStream.writeByte(first);
+		outputStream.writeByte(first);
 
 		int payloadMask = mask.isPresent() ? PAYLOAD_MASK : 0;
 
 		if (length > 0xffff) {
-			mOutputStream.writeByte(127 | payloadMask);
-			mOutputStream.writeLong64(length);
+			outputStream.writeByte(127 | payloadMask);
+			outputStream.writeLong64(length);
 		} else if (length >= 126) {
-			mOutputStream.writeByte(126 | payloadMask);
-			mOutputStream.writeInt16((int) length);
+			outputStream.writeByte(126 | payloadMask);
+			outputStream.writeInt16((int) length);
 		} else {
-			mOutputStream.writeByte((int) length | payloadMask);
+			outputStream.writeByte((int) length | payloadMask);
 		}
 
 		if (mask.isPresent()) {
-			mOutputStream.writeBytes(mask.get());
+			outputStream.writeBytes(mask.get());
 		}
 	}
 
@@ -640,14 +640,14 @@ public class WebSocket {
 		StatusLine statusLine;
 		List<Header> headers = new ArrayList<>();
 		try {
-			String statusLineStr = mInputStream.readLine();
+			String statusLineStr = inputStream.readLine();
 			if (Strings.isNullOrEmpty(statusLineStr)) {
 				throw new WrongWebsocketResponse(
 						"Wrong HTTP response status line");
 			}
 			statusLine = BasicLineParser.parseStatusLine(statusLineStr, null);
 			for (;;) {
-				String headerLineStr = mInputStream.readLine();
+				String headerLineStr = inputStream.readLine();
 				if (Strings.isNullOrEmpty(headerLineStr))
 					break;
 				Header header = BasicLineParser
@@ -748,13 +748,13 @@ public class WebSocket {
 
 	/**
 	 * This method will create 16 bity random key encoded to base64 for header.
-	 * If mSecureRandom generator is not accessible it will generate empty array
+	 * If secureRandom generator is not accessible it will generate empty array
 	 * encoded with base64 (thread safe)
 	 * 
 	 * @return random handshake key
 	 */
 	private String generateHandshakeSecret() {
-        return mSecureRandomProvider.generateHandshakeSecret();
+        return secureRandomProvider.generateHandshakeSecret();
 	}
 
 	/**
@@ -762,25 +762,25 @@ public class WebSocket {
 	 * InterruptedException (thread safe)
 	 */
 	public void interrupt() {
-		synchronized (mLockObj) {
-			while (State.DISCONNECTED.equals(mState)) {
+		synchronized (lockObj) {
+			while (State.DISCONNECTED.equals(state)) {
 				try {
-					mLockObj.wait();
+					lockObj.wait();
 				} catch (InterruptedException ignore) {
 				}
 			}
-			if (State.CONNECTING.equals(mState)
-					|| State.CONNECTED.equals(mState)) {
+			if (State.CONNECTING.equals(state)
+					|| State.CONNECTED.equals(state)) {
 				try {
-					mSocket.close();
+					socket.close();
 				} catch (IOException ignore) {
 				}
-				mState = State.DISCONNECTING;
-				mLockObj.notifyAll();
+				state = State.DISCONNECTING;
+				lockObj.notifyAll();
 			}
-			while (!State.DISCONNECTED.equals(mState)) {
+			while (!State.DISCONNECTED.equals(state)) {
 				try {
-					mLockObj.wait();
+					lockObj.wait();
 				} catch (InterruptedException ignore) {
 				}
 			}

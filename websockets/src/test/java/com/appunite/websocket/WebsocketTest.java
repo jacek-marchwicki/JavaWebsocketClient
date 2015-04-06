@@ -24,29 +24,29 @@ import static org.mockito.Mockito.verify;
 
 public class WebsocketTest {
 
-    private URI mUri;
-    private WebSocketListener mListener;
+    private URI uri;
+    private WebSocketListener listener;
 
     @Before
     public void setUp() throws Exception {
-        mUri = new URI("wss://www.yourserver.com/");
-        mListener = Mockito.mock(WebSocketListener.class);
+        uri = new URI("wss://www.yourserver.com/");
+        listener = Mockito.mock(WebSocketListener.class);
     }
 
     @Test
     public void testPreconditions() throws Exception {
-        assertThat(mUri, is(Matchers.notNullValue()));
+        assertThat(uri, is(Matchers.notNullValue()));
     }
 
     @Test
     public void testNoError() throws Exception {
-        final WebSocket webSocket = new WebSocket(mListener);
+        final WebSocket webSocket = new WebSocket(listener);
         final AtomicReference<Exception> reference = new AtomicReference<>();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    webSocket.connect(mUri);
+                    webSocket.connect(uri);
                 } catch (IOException | WrongWebsocketResponse e) {
                     reference.set(e);
                 } catch (InterruptedException ignore) {
@@ -65,14 +65,14 @@ public class WebsocketTest {
 
     @Test
     public void testConnection() throws Exception {
-        final WebSocket webSocket = new WebSocket(mListener);
+        final WebSocket webSocket = new WebSocket(listener);
 
         final AtomicBoolean interrupted = new AtomicBoolean(false);
         final Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    webSocket.connect(mUri);
+                    webSocket.connect(uri);
                 } catch (IOException | WrongWebsocketResponse ignore) {
                 } catch (InterruptedException e) {
                     interrupted.set(true);
@@ -81,7 +81,7 @@ public class WebsocketTest {
         });
         thread.start();
 
-        verify(mListener, timeout(2000)).onConnected();
+        verify(listener, timeout(2000)).onConnected();
 
         webSocket.interrupt();
 
@@ -92,7 +92,7 @@ public class WebsocketTest {
 
     @Test
     public void testMask() throws Exception {
-        final WebSocket webSocket = new WebSocket(mListener);
+        final WebSocket webSocket = new WebSocket(listener);
 
         final byte[] src = {0x01, 0x02, 0x03};
         final byte[] toMask = src.clone();
@@ -109,14 +109,14 @@ public class WebsocketTest {
 
     @Test
     public void testPing() throws Exception {
-        final WebSocket webSocket = new WebSocket(mListener);
+        final WebSocket webSocket = new WebSocket(listener);
 
         final AtomicBoolean interrupted = new AtomicBoolean(false);
         final Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    webSocket.connect(mUri);
+                    webSocket.connect(uri);
                 } catch (IOException | WrongWebsocketResponse ignore) {
                 } catch (InterruptedException e) {
                     interrupted.set(true);
@@ -125,12 +125,12 @@ public class WebsocketTest {
         });
         thread.start();
 
-        verify(mListener, timeout(2000)).onConnected();
-        reset(mListener);
+        verify(listener, timeout(2000)).onConnected();
+        reset(listener);
         final byte[] data = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03};
         webSocket.sendPingMessage(data.clone());
 
-        verify(mListener, timeout(2000)).onPong(data);
+        verify(listener, timeout(2000)).onPong(data);
 
         webSocket.interrupt();
 
@@ -141,20 +141,20 @@ public class WebsocketTest {
 
     @Test
     public void testReconnection() throws Exception {
-        final WebSocket webSocket = new WebSocket(mListener);
+        final WebSocket webSocket = new WebSocket(listener);
         final Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    webSocket.connect(mUri);
+                    webSocket.connect(uri);
                 } catch (IOException | WrongWebsocketResponse | InterruptedException ignore) {
                 }
             }
         });
         thread1.start();
 
-        verify(mListener, timeout(2000)).onConnected();
-        reset(mListener);
+        verify(listener, timeout(2000)).onConnected();
+        reset(listener);
         webSocket.interrupt();
         thread1.join(1000);
 
@@ -163,15 +163,15 @@ public class WebsocketTest {
             @Override
             public void run() {
                 try {
-                    webSocket.connect(mUri);
+                    webSocket.connect(uri);
                 } catch (IOException | WrongWebsocketResponse | InterruptedException ignore) {
                 }
             }
         });
         thread2.start();
 
-        verify(mListener, timeout(2000)).onConnected();
-        reset(mListener);
+        verify(listener, timeout(2000)).onConnected();
+        reset(listener);
         webSocket.interrupt();
         thread2.join(1000);
     }
@@ -188,26 +188,26 @@ public class WebsocketTest {
         final WebSocket webSocket = authorize();
 
         webSocket.sendStringMessage("{\"action\": \"observe\", \"users\": [12354]}");
-        verify(mListener, timeout(2000)).onStringMessage(argThat(containsString("\"1235664\"")));
+        verify(listener, timeout(2000)).onStringMessage(argThat(containsString("\"1235664\"")));
 
         webSocket.interrupt();
     }
 
     private WebSocket connectWebsocket() throws IOException, InterruptedException, NotConnectedException {
-        final WebSocket webSocket = new WebSocket(mListener);
+        final WebSocket webSocket = new WebSocket(listener);
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    webSocket.connect(mUri);
+                    webSocket.connect(uri);
                 } catch (IOException | WrongWebsocketResponse | InterruptedException ignore) {
                 }
             }
         }).start();
 
-        verify(mListener, timeout(2000)).onConnected();
-        reset(mListener);
+        verify(listener, timeout(2000)).onConnected();
+        reset(listener);
         return webSocket;
     }
 
@@ -217,8 +217,8 @@ public class WebsocketTest {
         webSocket.sendStringMessage("{\"action\": \"auth\", \"auth_token\": \"1ZizC3fpskE3YEHexfgX\"}");
 
         final ArgumentCaptor<String> responseMessage = ArgumentCaptor.forClass(String.class);
-        verify(mListener, timeout(2000)).onStringMessage(responseMessage.capture());
-        reset(mListener);
+        verify(listener, timeout(2000)).onStringMessage(responseMessage.capture());
+        reset(listener);
 
         assertThat(responseMessage.getValue(), is(containsString("auth")));
         assertThat(responseMessage.getValue(), is(containsString("OK")));

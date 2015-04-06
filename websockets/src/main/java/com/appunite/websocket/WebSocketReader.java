@@ -28,14 +28,14 @@ import java.io.InputStream;
  * 
  */
 class WebSocketReader {
-	private final DataInputStream mInputStream;
+	private final DataInputStream inputStream;
 
 	public WebSocketReader(InputStream inputStream) {
-		this.mInputStream = new DataInputStream(inputStream);
+		this.inputStream = new DataInputStream(inputStream);
 	}
 
 	public int readByteOrThrow() throws IOException {
-		int read = mInputStream.read();
+		int read = inputStream.read();
 		if (read == -1) {
 			throw new EOFException("Socket closed");
 		}
@@ -51,7 +51,7 @@ class WebSocketReader {
 			WrongWebsocketResponse {
 		int offset = 0;
 		while (length > 0) {
-			int read = mInputStream.read(buffer, offset, length);
+			int read = inputStream.read(buffer, offset, length);
 			if (read == -1) {
 				// maybe return closed connection exception
 				throw new WrongWebsocketResponse("Socket closed");
@@ -62,17 +62,17 @@ class WebSocketReader {
 	}
 
 	public long read64Long() throws IOException, WrongWebsocketResponse {
-		return mInputStream.readLong();
+		return inputStream.readLong();
 	}
 
 	public long read16Int() throws IOException, WrongWebsocketResponse {
-		return mInputStream.readUnsignedShort();
+		return inputStream.readUnsignedShort();
 	}
 
 	public String readLine() throws IOException, WrongWebsocketResponse {
 		StringBuilder string = new StringBuilder();
 		for (;;) {
-			int read = mInputStream.read();
+			int read = inputStream.read();
 			if (read == -1) {
 				throw new WrongWebsocketResponse("Empty response from server");
 			} else if (read == '\n') {

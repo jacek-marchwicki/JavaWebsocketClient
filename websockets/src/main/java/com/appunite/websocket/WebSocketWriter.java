@@ -29,40 +29,40 @@ import org.apache.http.util.EncodingUtils;
  * 
  */
 class WebSocketWriter {
-	private final DataOutputStream mOutputStream;
+	private final DataOutputStream outputStream;
 
 	public WebSocketWriter(OutputStream outputStream) {
-		this.mOutputStream = new DataOutputStream(outputStream);
+		this.outputStream = new DataOutputStream(outputStream);
 	}
 
 	private static byte[] NEW_LINE = new byte[] { '\r', '\n' };
 
 	public void writeNewLine() throws IOException {
-		mOutputStream.write(NEW_LINE);
+		outputStream.write(NEW_LINE);
 	}
 
 	public void writeLine(String line) throws IOException {
-		mOutputStream.write(EncodingUtils.getAsciiBytes(line));
+		outputStream.write(EncodingUtils.getAsciiBytes(line));
 		writeNewLine();
 	}
 
 	public void flush() throws IOException {
-		mOutputStream.flush();
+		outputStream.flush();
 	}
 
 	public void writeByte(int oneByte) throws IOException {
-		mOutputStream.write(oneByte);
+		outputStream.write(oneByte);
 	}
 
 	public void writeLong64(long length) throws IOException {
-		mOutputStream.writeLong(length);
+		outputStream.writeLong(length);
 	}
 
 	public void writeInt16(int length) throws IOException {
-		mOutputStream.writeShort(length);
+		outputStream.writeShort(length);
 	}
 
 	public void writeBytes(byte[] buffer) throws IOException {
-		mOutputStream.write(buffer);
+		outputStream.write(buffer);
 	}
 }

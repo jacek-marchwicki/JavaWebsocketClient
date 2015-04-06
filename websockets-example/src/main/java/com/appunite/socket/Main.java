@@ -47,13 +47,12 @@ public class Main extends Activity implements OnClickListener {
 		}
 	}
 
-	private View mConnectButton;
-	private View mDisconnectButton;
-	private View mSendButton;
-	private ListView mListView;
+	private View connectButton;
+	private View disconnectButton;
+	private View sendButton;
 
-	private List<String> mMessages;
-	private ArrayAdapter<String> mAdapter;
+	private List<String> messages;
+	private ArrayAdapter<String> adapter;
 	private WebSocket webSocket;
 
 	private final WebSocketListener listener = new WebSocketListener() {
@@ -65,7 +64,7 @@ public class Main extends Activity implements OnClickListener {
                 @Override
                 public void run() {
                     addMessageOnList("connected");
-                    mSendButton.setEnabled(true);
+                    sendButton.setEnabled(true);
                 }
             });
         }
@@ -137,33 +136,32 @@ public class Main extends Activity implements OnClickListener {
         }
     };
 
-	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		mConnectButton = findViewById(R.id.connect_button);
-		mDisconnectButton = findViewById(R.id.disconnect_button);
-		mSendButton = findViewById(R.id.send_button);
-		mListView = (ListView) findViewById(android.R.id.list);
+		connectButton = findViewById(R.id.connect_button);
+		disconnectButton = findViewById(R.id.disconnect_button);
+		sendButton = findViewById(R.id.send_button);
+		final ListView listView = (ListView) findViewById(android.R.id.list);
 
-		mMessages = new ArrayList<>();
-		mAdapter = new ArrayAdapter<>(this,
-				android.R.layout.simple_list_item_1, mMessages);
+		messages = new ArrayList<>();
+		adapter = new ArrayAdapter<>(this,
+				android.R.layout.simple_list_item_1, messages);
 
-		mListView.setAdapter(mAdapter);
+		listView.setAdapter(adapter);
 
-		mConnectButton.setOnClickListener(this);
-		mDisconnectButton.setOnClickListener(this);
-		mSendButton.setOnClickListener(this);
+		connectButton.setOnClickListener(this);
+		disconnectButton.setOnClickListener(this);
+		sendButton.setOnClickListener(this);
 
 		webSocket = new WebSocket(listener);
 	}
 
 	private void connect() {
-		mConnectButton.setEnabled(false);
-		mDisconnectButton.setEnabled(true);
+		connectButton.setEnabled(false);
+		disconnectButton.setEnabled(true);
 		addMessageOnList("connecting");
 
 		new Thread(new Runnable() {
@@ -186,9 +184,9 @@ public class Main extends Activity implements OnClickListener {
 							@Override
 							public void run() {
 								addMessageOnList("disconnected");
-								mSendButton.setEnabled(false);
-								mConnectButton.setEnabled(true);
-								mDisconnectButton.setEnabled(false);
+								sendButton.setEnabled(false);
+								connectButton.setEnabled(true);
+								disconnectButton.setEnabled(false);
 							}
 						});
 						break;
@@ -197,9 +195,9 @@ public class Main extends Activity implements OnClickListener {
 						@Override
 						public void run() {
 							addMessageOnList("connecting");
-							mSendButton.setEnabled(false);
-							mConnectButton.setEnabled(false);
-							mDisconnectButton.setEnabled(true);
+							sendButton.setEnabled(false);
+							connectButton.setEnabled(false);
+							disconnectButton.setEnabled(true);
 						}
 					});
 
@@ -221,8 +219,8 @@ public class Main extends Activity implements OnClickListener {
 	}
 
 	private void addMessageOnList(String msg) {
-		mMessages.add(msg);
-		mAdapter.notifyDataSetChanged();
+		messages.add(msg);
+		adapter.notifyDataSetChanged();
 	}
 
 	@Override
