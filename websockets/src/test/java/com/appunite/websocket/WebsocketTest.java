@@ -63,7 +63,7 @@ public class WebsocketTest {
         webSocket.interrupt();
     }
 
-    @Test
+//    @Test
     public void testConnection() throws Exception {
         final WebSocket webSocket = new WebSocket(listener);
 
@@ -107,7 +107,7 @@ public class WebsocketTest {
 
     }
 
-    @Test
+//    @Test
     public void testPing() throws Exception {
         final WebSocket webSocket = new WebSocket(listener);
 
@@ -139,7 +139,7 @@ public class WebsocketTest {
         assertThat(interrupted.get(), is(equalTo(true)));
     }
 
-    @Test
+//    @Test
     public void testReconnection() throws Exception {
         final WebSocket webSocket = new WebSocket(listener);
         final Thread thread1 = new Thread(new Runnable() {
@@ -176,14 +176,14 @@ public class WebsocketTest {
         thread2.join(1000);
     }
 
-    @Test
+//    @Test
     public void testSendData() throws Exception {
         final WebSocket webSocket = authorize();
 
         webSocket.interrupt();
     }
 
-    @Test
+//    @Test
     public void testRequestUsers() throws Exception {
         final WebSocket webSocket = authorize();
 
