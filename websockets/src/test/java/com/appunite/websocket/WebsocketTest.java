@@ -22,6 +22,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings("deprecation")
 public class WebsocketTest {
 
     private URI uri;
@@ -88,23 +89,6 @@ public class WebsocketTest {
         thread.join(1000);
 
         assertThat(interrupted.get(), is(equalTo(true)));
-    }
-
-    @Test
-    public void testMask() throws Exception {
-        final WebSocket webSocket = new WebSocket(listener);
-
-        final byte[] src = {0x01, 0x02, 0x03};
-        final byte[] toMask = src.clone();
-        final byte[] mask = {0x51, 0x52, 0x53, 0x54};
-        webSocket.maskBuffer(toMask, mask);
-
-        assertThat(toMask, is(not(equalTo(src))));
-
-        webSocket.maskBuffer(toMask, mask);
-
-        assertThat(toMask, is(equalTo(src)));
-
     }
 
 //    @Test
