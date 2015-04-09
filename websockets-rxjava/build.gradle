@@ -1,0 +1,27 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+    }
+}
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
+}
+
+dependencies {
+    compile project(":websockets")
+    compile "io.reactivex:rxjava:1.0.9"
+    compile "com.google.code.gson:gson:2.3"
+    //compile "com.appunite:websockets:1.0"
+
+    testCompile "org.hamcrest:hamcrest-all:1.3"
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'com.google.truth:truth:0.25'
+}

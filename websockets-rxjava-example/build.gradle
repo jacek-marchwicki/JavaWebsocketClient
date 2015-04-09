@@ -1,0 +1,44 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+    }
+}
+
+apply plugin: 'com.android.application'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
+}
+
+dependencies {
+    compile project(":websockets-rxjava")
+    compile 'io.reactivex:rxandroid:0.24.0'
+    compile 'com.android.support:recyclerview-v7:21.0.0'
+    compile 'com.google.guava:guava:18.0'
+    //compile "com.appunite:websockets:1.0"
+
+    testCompile "org.hamcrest:hamcrest-all:1.3"
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'com.google.truth:truth:0.25'
+    testCompile 'com.google.guava:guava:18.0'
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 22
+    }
+    buildTypes {
+        release {
+            proguardFiles = [getDefaultProguardFile('proguard-android.txt'), 'src/main/proguard-project.txt']
+        }
+    }
+}
