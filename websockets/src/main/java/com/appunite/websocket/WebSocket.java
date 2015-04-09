@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -40,7 +41,6 @@ import org.apache.http.message.BasicLineParser;
 import org.apache.http.util.EncodingUtils;
 
 import com.appunite.websocket.tools.Base64;
-import com.appunite.websocket.tools.Optional;
 import com.appunite.websocket.tools.Strings;
 
 import static com.appunite.websocket.tools.Preconditions.*;
@@ -59,43 +59,46 @@ public class WebSocket {
         private SecureRandom secureRandom;
 
 
-        public synchronized Optional<SecureRandom> getSecureRandom() {
+		@Nullable
+        public synchronized SecureRandom getSecureRandom() {
             if (error) {
-                return Optional.absent();
+                return null;
             }
             if (secureRandom != null) {
-                return Optional.of(secureRandom);
+                return secureRandom;
             }
             try {
                 secureRandom = SecureRandom.getInstance("SHA1PRNG");
-                return Optional.of(secureRandom);
+                return secureRandom;
             } catch (NoSuchAlgorithmException e) {
                 // if we do not have secure random we have to leave data unmasked
                 error = true;
-                return Optional.absent();
+                return null;
             }
         }
 
+		@Nonnull
         public synchronized String generateHandshakeSecret() {
-            final Optional<SecureRandom> secureRandom = getSecureRandom();
+            final SecureRandom secureRandom = getSecureRandom();
 
             byte[] nonce = new byte[16];
-            if (secureRandom.isPresent()) {
-                secureRandom.get().nextBytes(nonce);
+            if (secureRandom != null) {
+                secureRandom.nextBytes(nonce);
             } else {
                 Arrays.fill(nonce, (byte) 0);
             }
             return Base64.encodeToString(nonce, Base64.NO_WRAP);
         }
 
-        public synchronized Optional<byte[]> generateMask() {
-            final Optional<SecureRandom> secureRandom = getSecureRandom();
-            if (!secureRandom.isPresent())
-                return Optional.absent();
+		@Nullable
+        public synchronized byte[] generateMask() {
+            final SecureRandom secureRandom = getSecureRandom();
+            if (secureRandom == null)
+                return null;
 
-            byte[] bytes = new byte[4];
-            secureRandom.get().nextBytes(bytes);
-            return Optional.of(bytes);
+            final byte[] bytes = new byte[4];
+            secureRandom.nextBytes(bytes);
+            return bytes;
         }
     }
 	
@@ -126,13 +129,15 @@ public class WebSocket {
 	private static final int OPCODE_PONG_FRAME = 0x0A;
 
 	// Not need to be locked
+	@Nonnull
 	private final WebSocketListener listener;
-
+	@Nonnull
     private final SecureRandomProvider secureRandomProvider;
-
+	@Nonnull
 	private final Object lockObj = new Object(); // 1
 
 	// Locked via lockObj
+	@Nonnull
 	private State state = State.DISCONNECTED;
 
 	// Locked via lockObj
@@ -158,8 +163,8 @@ public class WebSocket {
 	 * @param listener
 	 *            where all calls will be thrown
 	 */
-	public WebSocket(WebSocketListener listener) {
-		checkArgument(listener != null, "Lister cannot be null");
+	public WebSocket(@Nonnull WebSocketListener listener) {
+		checkNotNull(listener, "Lister cannot be null");
 		this.listener = listener;
         secureRandomProvider = new SecureRandomProvider();
 	}
@@ -202,7 +207,7 @@ public class WebSocket {
 			inputStream = new WebSocketReader(socket.getInputStream());
 			outputStream = new WebSocketWriter(socket.getOutputStream());
 
-			String secret = generateHandshakeSecret();
+			final String secret = generateHandshakeSecret();
 			writeHeaders(uri, secret);
 			readHandshakeHeaders(secret);
 		} catch (IOException e) {
@@ -272,7 +277,7 @@ public class WebSocket {
 	 *             when called before onConnect or after onDisconnect
 	 */
 	@SuppressWarnings("UnusedDeclaration")
-    public void sendByteMessage(byte[] buffer) throws IOException,
+    public void sendByteMessage(@Nonnull byte[] buffer) throws IOException,
 			InterruptedException, NotConnectedException {
 		sendMessage(OPCODE_BINARY_FRAME, generateMask(), buffer);
 	}
@@ -291,12 +296,12 @@ public class WebSocket {
      *             when called before onConnect or after onDisconnect
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void sendPingMessage(byte[] buffer) throws IOException,
+    public void sendPingMessage(@Nonnull byte[] buffer) throws IOException,
             InterruptedException, NotConnectedException {
         sendMessage(OPCODE_PING_FRAME, generateMask(), buffer);
     }
 
-    private void sendPongMessage(byte[] buffer) throws IOException,
+    private void sendPongMessage(@Nonnull byte[] buffer) throws IOException,
             InterruptedException, NotConnectedException {
         sendMessage(OPCODE_PONG_FRAME, generateMask(), buffer);
     }
@@ -314,9 +319,10 @@ public class WebSocket {
 	 * @throws NotConnectedException
 	 *             when called before onConnect or after onDisconnect
 	 */
-	public void sendStringMessage(String message) throws IOException,
+	public void sendStringMessage(@Nonnull String message) throws IOException,
 			InterruptedException, NotConnectedException {
-		byte[] buffer = message.getBytes("UTF-8");
+		checkNotNull(message, "Message can not be null");
+		final byte[] buffer = message.getBytes("UTF-8");
 		sendMessage(OPCODE_TEXT_FRAME, generateMask(), buffer);
 	}
 
@@ -328,7 +334,8 @@ public class WebSocket {
 	 * @throws IllegalArgumentException
 	 *             if unkonwo schema
 	 */
-	private static boolean isSsl(URI uri) {
+	private static boolean isSsl(@Nonnull URI uri) {
+		checkNotNull(uri);
 		final String scheme = uri.getScheme();
 		if ("wss".equals(scheme)) {
 			return true;
@@ -347,7 +354,8 @@ public class WebSocket {
 	 * @throws IllegalArgumentException
 	 *             if unknwon schema
 	 */
-	private static int getPort(URI uri) {
+	private static int getPort(@Nonnull URI uri) {
+		checkNotNull(uri);
 		int port = uri.getPort();
 		if (port != -1)
 			return port;
@@ -369,7 +377,9 @@ public class WebSocket {
 	 * @param secret secret that is written to headers
 	 * @throws IOException
 	 */
-	private void writeHeaders(URI uri, String secret) throws IOException {
+	private void writeHeaders(@Nonnull URI uri, @Nonnull String secret) throws IOException {
+		checkNotNull(uri);
+		checkNotNull(secret);
 		outputStream.writeLine("GET " + uri.getPath() + " HTTP/1.1");
 		outputStream.writeLine("Upgrade: websocket");
 		outputStream.writeLine("Connection: Upgrade");
@@ -409,13 +419,14 @@ public class WebSocket {
 		} else if (payloadLen == 126) {
 			payloadLen = inputStream.read16Int();
 		}
-		final Optional<byte[]> maskingKey;
+		@Nullable
+		final byte[] maskingKey;
 		if (payloadMask) {
 			byte[] mask_key = new byte[4];
 			inputStream.readBytesOrThrow(mask_key);
-			maskingKey = Optional.of(mask_key);
+			maskingKey = mask_key;
 		} else {
-			maskingKey = Optional.absent();
+			maskingKey = null;
 		}
 		readPayload(fin, opcode, maskingKey, payloadLen);
 	}
@@ -436,7 +447,7 @@ public class WebSocket {
 	 * @throws NotConnectedException
 	 */
     private void readPayload(boolean fin, int opcode,
-                             Optional<byte[]> maskingKey,
+                             @Nullable byte[] maskingKey,
                              long payloadLen)
             throws WrongWebsocketResponse, IOException, InterruptedException,
             NotConnectedException {
@@ -452,8 +463,8 @@ public class WebSocket {
 		byte[] payload = new byte[(int) payloadLen];
 		inputStream.readBytesOrThrow(payload);
 
-        if (maskingKey.isPresent()) {
-            maskBuffer(payload, maskingKey.get());
+        if (maskingKey != null) {
+            maskBuffer(payload, maskingKey);
         }
 
 		if (opcode == OPCODE_CONTINUED_FRAME) {
@@ -482,7 +493,8 @@ public class WebSocket {
 	 * 
 	 * @return 4 bit random mask
 	 */
-	private Optional<byte[]> generateMask() {
+	@Nullable
+	private byte[] generateMask() {
 		return secureRandomProvider.generateMask();
 	}
 
@@ -494,7 +506,7 @@ public class WebSocket {
 	 * @param mask
 	 *            4 byte length mask to apply
 	 */
-	 void maskBuffer(byte[] buffer, byte[] mask) {
+	 void maskBuffer(@Nonnull byte[] buffer, @Nonnull byte[] mask) {
 		checkNotNull(mask);
         checkNotNull(buffer);
 		checkArgument(mask.length == 4);
@@ -515,7 +527,7 @@ public class WebSocket {
 	 *            href="http://tools.ietf.org/html/rfc6455#section-11.8">rfc6455
 	 *            opcode</a>
 	 * @param mask
-	 *            - message mask key (4 byte length) or Optional.absent() if
+	 *            - message mask key (4 byte length) or null if
 	 *            message should not be masked
 	 * @param buffer
 	 *            buffer that will be sent to user. This buffer will be changed
@@ -527,10 +539,9 @@ public class WebSocket {
 	 * @throws NotConnectedException
 	 *             - when socket was not connected
 	 */
-	private void sendMessage(int opcode, Optional<byte[]> mask, byte[] buffer)
+	private void sendMessage(int opcode, @Nullable byte[] mask, @Nonnull byte[] buffer)
 			throws IOException, InterruptedException, NotConnectedException {
         checkNotNull(buffer, "buffer should not be null");
-		checkNotNull(mask, "mask should not be null");
 		synchronized (lockObj) {
 			if (!State.CONNECTED.equals(state)) {
 				throw new NotConnectedException();
@@ -540,8 +551,8 @@ public class WebSocket {
 		try {
 			synchronized (writeLock) {
 				sendHeader(true, opcode, mask, buffer.length);
-				if (mask.isPresent()) {
-					maskBuffer(buffer, mask.get());
+				if (mask != null) {
+					maskBuffer(buffer, mask);
 				}
 				outputStream.writeBytes(buffer);
 				outputStream.flush();
@@ -566,7 +577,7 @@ public class WebSocket {
 	/**
 	 * Send message header to output stream. Should be safed with writeLock and
 	 * should append mWrite lock. Look at
-	 * {@link #sendMessage(int, Optional, byte[])}.
+	 * {@link #sendMessage(int, byte[], byte[])}.
 	 * 
 	 * (not thread safe)
 	 * 
@@ -577,7 +588,7 @@ public class WebSocket {
 	 *            href="http://tools.ietf.org/html/rfc6455#section-11.8">rfc6455
 	 *            opcode</a>
 	 * @param mask
-	 *            - message mask key (4 byte length) or Optional.absent() if
+	 *            - message mask key (4 byte length) or null if
 	 *            message should not be masked
 	 * @param length
 	 *            - length of message that will be sent after header
@@ -588,20 +599,18 @@ public class WebSocket {
 	 * @see <a href="http://tools.ietf.org/html/rfc6455#section-5.2">rfc6455
 	 *      frame</a>
 	 */
-	private void sendHeader(boolean fin, int opcode, Optional<byte[]> mask,
+	private void sendHeader(boolean fin, int opcode, @Nullable byte[] mask,
 			long length) throws IOException {
 		checkArgument(opcode >= 0x00 && opcode <= 0x0f,
 				"opcode value should be between 0x00 and 0x0f");
-        checkNotNull(mask, "mask should not be null");
 		checkArgument(length >= 0, "length should not be negative");
-		if (mask.isPresent()) {
-			checkArgument(mask.get().length == 4,
-					"Mask have to contain 4 bytes");
+		if (mask != null) {
+			checkArgument(mask.length == 4, "Mask have to contain 4 bytes");
 		}
 		int first = opcode | (fin ? FIN : 0);
 		outputStream.writeByte(first);
 
-		int payloadMask = mask.isPresent() ? PAYLOAD_MASK : 0;
+		int payloadMask = mask != null ? PAYLOAD_MASK : 0;
 
 		if (length > 0xffff) {
 			outputStream.writeByte(127 | payloadMask);
@@ -613,8 +622,8 @@ public class WebSocket {
 			outputStream.writeByte((int) length | payloadMask);
 		}
 
-		if (mask.isPresent()) {
-			outputStream.writeBytes(mask.get());
+		if (mask != null) {
+			outputStream.writeBytes(mask);
 		}
 	}
 
@@ -630,27 +639,28 @@ public class WebSocket {
 	 *             - throw when wrong response was given from server (hanshake
 	 *             error)
 	 */
-	private void readHandshakeHeaders(String key) throws IOException,
+	private void readHandshakeHeaders(@Nonnull String key) throws IOException,
 			WrongWebsocketResponse {
+		checkNotNull(key);
 		// schould get response:
 		// HTTP/1.1 101 Switching Protocols
 		// Upgrade: websocket
 		// Connection: Upgrade
 		// Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
-		StatusLine statusLine;
-		List<Header> headers = new ArrayList<>();
+		final StatusLine statusLine;
+		final List<Header> headers = new ArrayList<>();
 		try {
-			String statusLineStr = inputStream.readLine();
+			final String statusLineStr = inputStream.readLine();
 			if (Strings.isNullOrEmpty(statusLineStr)) {
 				throw new WrongWebsocketResponse(
 						"Wrong HTTP response status line");
 			}
 			statusLine = BasicLineParser.parseStatusLine(statusLineStr, null);
 			for (;;) {
-				String headerLineStr = inputStream.readLine();
+				final String headerLineStr = inputStream.readLine();
 				if (Strings.isNullOrEmpty(headerLineStr))
 					break;
-				Header header = BasicLineParser
+				final Header header = BasicLineParser
 						.parseHeader(headerLineStr, null);
 				headers.add(header);
 			}
@@ -670,8 +680,9 @@ public class WebSocket {
 	 * @throws WrongWebsocketResponse
 	 *             thrown when status line is incorrect
 	 */
-	private static void verifyHandshakeStatusLine(StatusLine statusLine)
+	private static void verifyHandshakeStatusLine(@Nonnull StatusLine statusLine)
 			throws WrongWebsocketResponse {
+		checkNotNull(statusLine);
 		if (statusLine.getStatusCode() != HttpStatus.SC_SWITCHING_PROTOCOLS) {
 			throw new WrongWebsocketResponse("Wrong http response status");
 		}
@@ -689,8 +700,10 @@ public class WebSocket {
 	 * @throws WrongWebsocketResponse
 	 *             - will be throw if headers are not correct
 	 */
-	private static void verifyHanshakeHeaders(String key, List<Header> headers)
+	private static void verifyHanshakeHeaders(@Nonnull String key, @Nonnull List<Header> headers)
 			throws WrongWebsocketResponse {
+		checkNotNull(key);
+		checkNotNull(headers);
 		String webSocketAccept = null;
 		String webSocketProtocol = null;
 		for (Header header : headers) {
@@ -728,8 +741,10 @@ public class WebSocket {
 	 * @param acceptValue accept value received from server
 	 * @return true if accept value match key
 	 */
-	private static boolean verifyHandshakeAcceptValue(String key,
-                                                      String acceptValue) {
+	private static boolean verifyHandshakeAcceptValue(@Nonnull String key,
+                                                      @Nonnull String acceptValue) {
+		checkNotNull(key);
+		checkNotNull(acceptValue);
 		String base = key + MAGIC_STRING;
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -753,6 +768,7 @@ public class WebSocket {
 	 * 
 	 * @return random handshake key
 	 */
+	@Nonnull
 	private String generateHandshakeSecret() {
         return secureRandomProvider.generateHandshakeSecret();
 	}

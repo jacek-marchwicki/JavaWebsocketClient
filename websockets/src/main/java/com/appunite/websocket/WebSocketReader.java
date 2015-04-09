@@ -21,6 +21,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.annotation.Nonnull;
+
+import static com.appunite.websocket.tools.Preconditions.checkNotNull;
+
 /**
  * Helper to read data from WebSocket
  * 
@@ -42,13 +46,15 @@ class WebSocketReader {
 		return read;
 	}
 
-	public void readBytesOrThrow(byte[] buffer) throws IOException,
+	public void readBytesOrThrow(@Nonnull byte[] buffer) throws IOException,
 			WrongWebsocketResponse {
+		checkNotNull(buffer);
 		readBytesOrThrow(buffer, buffer.length);
 	}
 
-	public void readBytesOrThrow(byte[] buffer, int length) throws IOException,
+	public void readBytesOrThrow(@Nonnull byte[] buffer, int length) throws IOException,
 			WrongWebsocketResponse {
+		checkNotNull(buffer);
 		int offset = 0;
 		while (length > 0) {
 			int read = inputStream.read(buffer, offset, length);
@@ -69,8 +75,9 @@ class WebSocketReader {
 		return inputStream.readUnsignedShort();
 	}
 
+	@Nonnull
 	public String readLine() throws IOException, WrongWebsocketResponse {
-		StringBuilder string = new StringBuilder();
+		final StringBuilder string = new StringBuilder();
 		for (;;) {
 			int read = inputStream.read();
 			if (read == -1) {

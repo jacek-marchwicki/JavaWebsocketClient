@@ -17,6 +17,8 @@
 package com.appunite.websocket;
 
 
+import javax.annotation.Nonnull;
+
 /**
  * Thrown when unknown response from WebSocket was received
  * 
@@ -27,11 +29,11 @@ public class WrongWebsocketResponse extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	public WrongWebsocketResponse(String msg, Throwable e) {
+	public WrongWebsocketResponse(@Nonnull String msg, @Nonnull Throwable e) {
 		super(msg, e);
 	}
 
-	public WrongWebsocketResponse(String msg) {
+	public WrongWebsocketResponse(@Nonnull String msg) {
 		super(msg);
 	}
 

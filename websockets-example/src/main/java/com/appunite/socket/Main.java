@@ -34,6 +34,8 @@ import com.appunite.websocket.WebSocket;
 import com.appunite.websocket.WebSocketListener;
 import com.appunite.websocket.WrongWebsocketResponse;
 
+import javax.annotation.Nonnull;
+
 public class Main extends Activity implements OnClickListener {
 
 
@@ -70,7 +72,7 @@ public class Main extends Activity implements OnClickListener {
         }
 
         @Override
-        public void onStringMessage(final String message) throws IOException, InterruptedException, NotConnectedException {
+        public void onStringMessage(@Nonnull final String message) throws IOException, InterruptedException, NotConnectedException {
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -81,7 +83,7 @@ public class Main extends Activity implements OnClickListener {
         }
 
         @Override
-        public void onBinaryMessage(byte[] data) throws IOException, InterruptedException, NotConnectedException {
+        public void onBinaryMessage(@Nonnull byte[] data) throws IOException, InterruptedException, NotConnectedException {
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -92,7 +94,7 @@ public class Main extends Activity implements OnClickListener {
         }
 
         @Override
-        public void onPing(byte[] data) throws IOException, InterruptedException, NotConnectedException {
+        public void onPing(@Nonnull byte[] data) throws IOException, InterruptedException, NotConnectedException {
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -103,7 +105,7 @@ public class Main extends Activity implements OnClickListener {
         }
 
         @Override
-        public void onPong(byte[] data) throws IOException, InterruptedException, NotConnectedException {
+        public void onPong(@Nonnull byte[] data) throws IOException, InterruptedException, NotConnectedException {
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -114,7 +116,7 @@ public class Main extends Activity implements OnClickListener {
         }
 
         @Override
-        public void onServerRequestedClose(byte[] data) throws IOException, InterruptedException, NotConnectedException {
+        public void onServerRequestedClose(@Nonnull byte[] data) throws IOException, InterruptedException, NotConnectedException {
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -125,7 +127,7 @@ public class Main extends Activity implements OnClickListener {
         }
 
         @Override
-        public void onUnknownMessage(byte[] data) throws IOException, InterruptedException, NotConnectedException {
+        public void onUnknownMessage(@Nonnull byte[] data) throws IOException, InterruptedException, NotConnectedException {
             runOnUiThread(new Runnable() {
 
                 @Override

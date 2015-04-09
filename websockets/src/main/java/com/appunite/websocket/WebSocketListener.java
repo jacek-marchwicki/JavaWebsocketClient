@@ -18,6 +18,8 @@ package com.appunite.websocket;
 
 import java.io.IOException;
 
+import javax.annotation.Nonnull;
+
 /**
  * Listener to get websocket responses
  * 
@@ -42,7 +44,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onStringMessage(String message) throws IOException,
+	void onStringMessage(@Nonnull String message) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -52,7 +54,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onBinaryMessage(byte[] data) throws IOException,
+	void onBinaryMessage(@Nonnull byte[] data) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -62,7 +64,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onPing(byte[] data) throws IOException, InterruptedException,
+	void onPing(@Nonnull byte[] data) throws IOException, InterruptedException,
 			NotConnectedException;
 
 	/**
@@ -72,7 +74,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onPong(byte[] data) throws IOException, InterruptedException,
+	void onPong(@Nonnull byte[] data) throws IOException, InterruptedException,
 			NotConnectedException;
 
 	/**
@@ -82,7 +84,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onServerRequestedClose(byte[] data) throws IOException,
+	void onServerRequestedClose(@Nonnull byte[] data) throws IOException,
 			InterruptedException, NotConnectedException;
 
 	/**
@@ -92,7 +94,7 @@ public interface WebSocketListener {
 	 * @throws InterruptedException
 	 * @throws NotConnectedException
 	 */
-	void onUnknownMessage(byte[] data) throws IOException,
+	void onUnknownMessage(@Nonnull byte[] data) throws IOException,
 			InterruptedException, NotConnectedException;
 
 }

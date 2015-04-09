@@ -22,6 +22,10 @@ import java.io.OutputStream;
 
 import org.apache.http.util.EncodingUtils;
 
+import javax.annotation.Nonnull;
+
+import static com.appunite.websocket.tools.Preconditions.checkNotNull;
+
 /**
  * Helper to write data to websocket
  * 
@@ -41,7 +45,8 @@ class WebSocketWriter {
 		outputStream.write(NEW_LINE);
 	}
 
-	public void writeLine(String line) throws IOException {
+	public void writeLine(@Nonnull String line) throws IOException {
+		checkNotNull(line);
 		outputStream.write(EncodingUtils.getAsciiBytes(line));
 		writeNewLine();
 	}
@@ -62,7 +67,8 @@ class WebSocketWriter {
 		outputStream.writeShort(length);
 	}
 
-	public void writeBytes(byte[] buffer) throws IOException {
+	public void writeBytes(@Nonnull byte[] buffer) throws IOException {
+		checkNotNull(buffer);
 		outputStream.write(buffer);
 	}
 }
