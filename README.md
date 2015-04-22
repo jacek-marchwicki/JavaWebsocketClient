@@ -2,6 +2,10 @@
 AndroidAUSocketIO is library providing websocket connection form Android.
 It is designed to be fast and fault tolerant.
 
+# Example websockets server
+
+In examples we use [python twisted server](websockets-server/README.md)
+
 # Run example from gradle
 
     ./gradlew installDebug

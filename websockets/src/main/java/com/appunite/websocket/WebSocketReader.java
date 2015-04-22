@@ -34,7 +34,7 @@ import static com.appunite.websocket.tools.Preconditions.checkNotNull;
 class WebSocketReader {
 	private final DataInputStream inputStream;
 
-	public WebSocketReader(InputStream inputStream) {
+	public WebSocketReader(@Nonnull InputStream inputStream) {
 		this.inputStream = new DataInputStream(inputStream);
 	}
 

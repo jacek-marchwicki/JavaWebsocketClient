@@ -33,9 +33,6 @@ import static com.appunite.websocket.tools.Preconditions.checkState;
  */
 public class WebSocket {
 
-
-
-
 	@Nonnull
 	private final WebSocketListener listener;
 	@Nonnull
