@@ -38,7 +38,7 @@ public class RegisterMessage extends Message {
     @Override
     public String toString() {
         return "RegisterRequest{" +
-                "authToken='" + authToken + '\'' +
+                "message='" + authToken + '\'' +
                 "} " + super.toString();
     }
 }

@@ -26,7 +26,7 @@ public class SocketConnectionImpl implements SocketConnection {
     @Override
     public Observable<RxJsonEvent> connection() {
         return sockets.webSocketObservable()
-                .retryWhen(repeatDuration(5, TimeUnit.SECONDS));
+                .retryWhen(repeatDuration(1, TimeUnit.SECONDS));
     }
 
     @Nonnull

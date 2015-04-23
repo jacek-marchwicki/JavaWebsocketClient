@@ -20,14 +20,13 @@ import javax.annotation.Nonnull;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 public class Socket {
-    private final PublishSubject<RxJsonEvent> events;
+    private final Observable<RxJsonEvent> events;
     private final Observable<Object> connection;
     private final BehaviorSubject<RxJsonEventConn> connectedAndRegistered;
     @Nonnull
@@ -35,18 +34,12 @@ public class Socket {
 
     public Socket(@Nonnull SocketConnection socketConnection, @Nonnull Scheduler scheduler) {
         this.scheduler = scheduler;
-        events = PublishSubject.create();
-
+        final PublishSubject<RxJsonEvent>events = PublishSubject.create();
         connection = socketConnection.connection()
-                .doOnNext(new Action1<RxJsonEvent>() {
-                    @Override
-                    public void call(RxJsonEvent rxEvent) {
-                        events.onNext(rxEvent);
-                    }
-                })
+                .lift(new OperatorDoOnNext<>(events))
                 .lift(MoreObservables.ignoreNext())
                 .publish().refCount();
-//                .compose(MoreObservables.behaviorRefCount());
+        this.events = events;
 
 
         final Observable<RxJsonEventMessage> registeredMessage = events

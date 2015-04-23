@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 import java.util.Locale;
 
 public enum MessageType {
-    REGISTER, REGISTERED, PING, DATA, PONG, ERROR;
+    REGISTER, REGISTERED, PING, DATA, PONG, ERROR, CHAT;
 
     public static class SerializerDeserializer implements JsonDeserializer<MessageType>, JsonSerializer<MessageType> {
 

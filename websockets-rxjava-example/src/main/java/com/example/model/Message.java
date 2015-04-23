@@ -53,7 +53,7 @@ public abstract class Message {
                                     Type type,
                                     JsonDeserializationContext jsonDeserializationContext)
                 throws JsonParseException {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            final JsonObject jsonObject = jsonElement.getAsJsonObject();
             final JsonElement typeElement = jsonObject.get("type");
             if (typeElement == null) {
                 throw new JsonParseException("No \"type\" field in reference");
@@ -68,6 +68,8 @@ public abstract class Message {
                 return jsonDeserializationContext.deserialize(jsonObject, RegisteredMessage.class);
             } else if (MessageType.DATA.equals(messageType)) {
                 return jsonDeserializationContext.deserialize(jsonObject, DataMessage.class);
+            } else if (MessageType.CHAT.equals(messageType)) {
+                return jsonDeserializationContext.deserialize(jsonObject, ChatMessage.class);
             } else {
                 throw new JsonParseException("Unknown type " + messageType);
             }

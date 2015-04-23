@@ -7,7 +7,7 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-#   Unless required by applicable law or agreed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
@@ -17,6 +17,7 @@ import sys
 import logging
 import signal
 import json
+import base64
 from datetime import timedelta
 
 from twisted.internet import reactor
@@ -42,11 +43,16 @@ def websocket_func(logger, host, port):
 
     signal.signal(signal.SIGINT, sigint_handler)
 
-    def send_to_all(msg):
-        logger.debug("Sending to all: %s", msg)
+    def send_to_all(msg, except_connection=None):
+        if except_connection:
+            logger.debug("Sending to all except %d message: %s", id(except_connection), msg)
+        else:
+            logger.debug("Sending to all: %s", msg)
         json_msg = json.dumps(msg)
-        for i in range(len(cons)):
-            con = cons[i]
+        for con in cons:
+            if con == except_connection:
+                continue
+            logger.debug("Sending to %d message: %s", id(con), msg)
             con.sendMessage(json_msg, False)
 
     class EchoServerProtocol(WebSocketServerProtocol):
@@ -62,6 +68,9 @@ def websocket_func(logger, host, port):
             logger.debug("Sending to self: %s", msg)
             json_msg = json.dumps(msg)
             self.sendMessage(json_msg, False)
+
+        def send_to_others(self, msg):
+            send_to_all(msg, self)
 
         def onMessage(self, msg, binary):
             if binary:
@@ -84,12 +93,18 @@ def websocket_func(logger, host, port):
             self.send_to_self({
                 "type": "data",
                 "id": data["id"],
-                "response": "some data"
+                "message": base64.b64encode(data["message"])
+            })
+            self.send_to_others({
+                "type": "chat",
+                "from": str(id(self)),
+                "message": data["message"]
             })
 
         def on_message_register(self, data):
             auth_token = data["auth_token"]
             if auth_token in VALID_AUTH_TOKENS:
+                cons.append(self)
                 self.send_to_self({"type": "registered", "response": "you are cool"})
             else:
                 self.send_error("Wrong auth token")
@@ -98,13 +113,12 @@ def websocket_func(logger, host, port):
             self.send_to_self({"type": "pong", "message": data["message"]})
 
         def onClose(self, was_clean, code, reason):
-            logger.debug("Disconnected: %s" % self)
+            logger.debug("Disconnected: %s" % id(self))
             if self in cons:
                 cons.remove(self)
 
         def onOpen(self):
-            logger.debug("Connected: %s" % self)
-            cons.append(self)
+            logger.debug("Connected: %s" % id(self))
 
     url = "ws://%s:%d" % (host, port)
 

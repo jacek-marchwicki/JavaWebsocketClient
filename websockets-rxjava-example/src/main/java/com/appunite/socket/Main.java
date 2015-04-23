@@ -18,6 +18,7 @@ package com.appunite.socket;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -30,6 +31,7 @@ import com.appunite.websocket.rx.json.messages.RxJsonEvent;
 import com.appunite.websocket.rx.json.messages.RxJsonEventConn;
 import com.appunite.websocket.rx.json.messages.RxJsonEventDisconnected;
 import com.appunite.websocket.rx.json.messages.RxJsonEventMessage;
+import com.appunite.websocket.rx.json.messages.RxJsonEventWrongMessageFormat;
 import com.example.Socket;
 import com.example.SocketConnection;
 import com.example.SocketConnectionImpl;
@@ -41,9 +43,10 @@ import com.google.gson.GsonBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Observer;
@@ -51,10 +54,11 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.plugins.RxJavaErrorHandler;
+import rx.plugins.RxJavaPlugins;
 import rx.schedulers.Schedulers;
 
 public class Main extends Activity implements OnClickListener {
-
 
 	private static final URI ADDRESS;
 
@@ -64,6 +68,13 @@ public class Main extends Activity implements OnClickListener {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
+		RxJavaPlugins.getInstance().registerErrorHandler(new RxJavaErrorHandler() {
+			@Override
+			public void handleError(Throwable e) {
+				Log.e("RxJava", "Error", e);
+				super.handleError(e);
+			}
+		});
 	}
 
 	private View connectButton;
@@ -77,6 +88,7 @@ public class Main extends Activity implements OnClickListener {
 	private Subscription connectionSubscription;
 	private Subscription statusSubscription;
 	private Subscription messageSubscription;
+	private DateFormat timeInstance = DateFormat.getTimeInstance(DateFormat.MEDIUM);
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -101,9 +113,16 @@ public class Main extends Activity implements OnClickListener {
 					public void call(RxJsonEvent rxJsonEvent) {
 						if (rxJsonEvent instanceof RxJsonEventMessage) {
 							addMessageOnList("message: " + ((RxJsonEventMessage) rxJsonEvent).message().toString());
+						} else if (rxJsonEvent instanceof RxJsonEventWrongMessageFormat) {
+							final RxJsonEventWrongMessageFormat wrongMessageFormat = (RxJsonEventWrongMessageFormat) rxJsonEvent;
+							addMessageOnList("could not parse message: " + wrongMessageFormat.message()
+									+ ", " + wrongMessageFormat.exception().toString());
 						} else if (rxJsonEvent instanceof RxJsonEventDisconnected) {
 							//noinspection ThrowableResultOfMethodCallIgnored
-							addMessageOnList("error:" + ((RxJsonEventDisconnected) rxJsonEvent).exception().toString());
+							final Exception exception = ((RxJsonEventDisconnected) rxJsonEvent).exception();
+							if (!(exception instanceof InterruptedException)) {
+								addMessageOnList("error:" + exception.toString());
+							}
 						}
 					}
 				});
@@ -115,6 +134,7 @@ public class Main extends Activity implements OnClickListener {
 					}
 				})
 				.subscribeOn(Schedulers.io())
+				.distinctUntilChanged()
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe(new Action1<Boolean>() {
 					@Override
@@ -178,19 +198,17 @@ public class Main extends Activity implements OnClickListener {
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe(new Observer<DataMessage>() {
 					@Override
-					public void onCompleted() {
-
-					}
+					public void onCompleted() {}
 
 					@Override
 					public void onError(Throwable e) {
-						addMessageOnList("Sending error: " + e.toString());
+						addMessageOnList("sending error: " + e.toString());
 
 					}
 
 					@Override
 					public void onNext(DataMessage dataMessage) {
-						addMessageOnList("Response: " + dataMessage.toString());
+						addMessageOnList("sending response: " + dataMessage.toString());
 					}
 				});
 	}
@@ -203,7 +221,7 @@ public class Main extends Activity implements OnClickListener {
 	}
 
 	private void addMessageOnList(String msg) {
-		messages.add(msg);
+		messages.add(timeInstance.format(new Date()) + ": " + msg);
 		adapter.notifyDataSetChanged();
 	}
 
