@@ -18,8 +18,10 @@ package com.appunite.socket;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
@@ -29,16 +31,23 @@ import com.example.SocketConnection;
 import com.example.SocketConnectionImpl;
 import com.example.model.Message;
 import com.example.model.MessageType;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.view.ViewActions;
 import rx.android.view.ViewObservable;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
 import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends Activity {
@@ -47,7 +56,7 @@ public class MainActivity extends Activity {
 
 	static {
 		try {
-			ADDRESS = new URI("ws://192.168.0.123:8080/ws");
+			ADDRESS = new URI("ws://192.168.0.112:8080/ws");
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
@@ -73,12 +82,51 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.main);
 		final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.main_activity_recycler_view);
-		recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+		final LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+		recyclerView.setLayoutManager(layout);
 		final MainAdapter adapter = new MainAdapter();
 		recyclerView.setAdapter(adapter);
+		recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+		final BehaviorSubject<Boolean> isLastSubject = BehaviorSubject.create(true);
+
+		recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+			boolean manualScrolling = false;
+
+			@Override
+			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+				if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+					manualScrolling = true;
+				}
+				if (manualScrolling && newState == RecyclerView.SCROLL_STATE_IDLE) {
+					manualScrolling = false;
+
+					final int lastVisibleItemPosition = layout.findLastVisibleItemPosition();
+					final int previousItemsCount = adapter.getItemCount();
+					final boolean isLast = previousItemsCount - 1 == lastVisibleItemPosition;
+					isLastSubject.onNext(isLast);
+				}
+			}
+		});
+
 
 		subs = new CompositeSubscription(
-				presenter.itemsObservable().subscribe(adapter),
+				isLastSubject.subscribe(presenter.lastItemInViewObserver()),
+				presenter.itemsWithScrollObservable()
+						.subscribe(new Action1<MainPresenter.ItemsWithScroll>() {
+							@Override
+							public void call(final MainPresenter.ItemsWithScroll itemsWithScroll) {
+								adapter.call(itemsWithScroll.items());
+								if (itemsWithScroll.shouldScroll()) {
+									recyclerView.post(new Runnable() {
+										@Override
+										public void run() {
+											recyclerView.smoothScrollToPosition(itemsWithScroll.scrollToPosition());
+										}
+									});
+								}
+							}
+						}),
 				presenter.connectButtonEnabledObservable()
 					.subscribe(ViewActions.setEnabled(findViewById(R.id.connect_button))),
 				presenter.disconnectButtonEnabledObservable()

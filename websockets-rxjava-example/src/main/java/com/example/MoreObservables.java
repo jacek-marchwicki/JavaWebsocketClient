@@ -9,6 +9,7 @@ import rx.Subscriber;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.internal.operators.OperatorMulticast;
+import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -23,7 +24,7 @@ public class MoreObservables {
 
                     @Override
                     public Subject<? super T, ? extends T> call() {
-                        return PublishSubject.<T>create();
+                        return BehaviorSubject.<T>create();
                     }
 
                 }).refCount();

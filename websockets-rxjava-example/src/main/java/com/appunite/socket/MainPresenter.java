@@ -32,24 +32,15 @@ public class MainPresenter {
     private final BehaviorSubject<ImmutableList<AdapterItem>> items;
     private final Observable<Boolean> connected;
     private final BehaviorSubject<Boolean> requestConnection = BehaviorSubject.create();
-    private PublishSubject<Object> connectClick = PublishSubject.create();
-    private PublishSubject<Object> disconnectClick = PublishSubject.create();
-    private PublishSubject<Object> sendClick = PublishSubject.create();
-
-    static class DataMessageOrError {
-        private final DataMessage message;
-        private final Throwable error;
-
-        public DataMessageOrError(DataMessage message, Throwable error) {
-            this.message = message;
-            this.error = error;
-        }
-    }
+    private final PublishSubject<Object> connectClick = PublishSubject.create();
+    private final PublishSubject<Object> disconnectClick = PublishSubject.create();
+    private final PublishSubject<Object> sendClick = PublishSubject.create();
+    private final BehaviorSubject<Boolean> lastItemInView = BehaviorSubject.create();
+    private final PublishSubject<AdapterItem> addItem = PublishSubject.create();
 
     public MainPresenter(@Nonnull final Socket socket,
                          @Nonnull final Scheduler networkScheduler,
                          @Nonnull final Scheduler uiScheduler) {
-        final PublishSubject<AdapterItem> addItem = PublishSubject.create();
         items = BehaviorSubject.create();
 
         Observable.merge(connectClick.map(funcTrue()), disconnectClick.map(funcFalse()))
@@ -126,6 +117,22 @@ public class MainPresenter {
                 .subscribe(addItem);
     }
 
+    @Nonnull
+    public Observable<ItemsWithScroll> itemsWithScrollObservable() {
+        return Observable.combineLatest(items, lastItemInView, new Func2<ImmutableList<MainPresenter.AdapterItem>, Boolean, ItemsWithScroll>() {
+            @Override
+            public ItemsWithScroll call(ImmutableList<MainPresenter.AdapterItem> adapterItems, Boolean isLastItemInList) {
+                final int lastItemPosition = adapterItems.size() - 1;
+                final boolean shouldScroll = isLastItemInList && lastItemPosition >= 0;
+                return new ItemsWithScroll(adapterItems, shouldScroll, lastItemPosition);
+            }
+        });
+    }
+
+    public Observer<Boolean> lastItemInViewObserver() {
+        return lastItemInView;
+    }
+
     private Func1<Boolean, String> mapConnectedStatusToString() {
         return new Func1<Boolean, String>() {
             @Override
@@ -185,6 +192,7 @@ public class MainPresenter {
         return new Func1<Object, Observable<DataMessageOrError>>() {
             @Override
             public Observable<DataMessageOrError> call(Object o) {
+                addItem.onNext(newItem("sending...", null));
                 return socket
                         .sendMessageOnceWhenConnected(new Func1<String, Observable<Object>>() {
                             @Override
@@ -278,11 +286,6 @@ public class MainPresenter {
     private AdapterItem newItem(@Nonnull String message, @Nullable String details) {
 
         return new AdapterItem(newId(), System.currentTimeMillis(), message, details);
-    }
-
-    @Nonnull
-    public Observable<ImmutableList<AdapterItem>> itemsObservable() {
-        return items;
     }
 
     @Nonnull
@@ -403,6 +406,40 @@ public class MainPresenter {
                 public void call(Object o) {
                 }
             });
+        }
+    }
+
+    public static class ItemsWithScroll {
+        private final ImmutableList<AdapterItem> items;
+        private final boolean shouldScroll;
+        private final int scrollToPosition;
+
+        public ItemsWithScroll(ImmutableList<AdapterItem> items, boolean shouldScroll, int scrollToPosition) {
+            this.items = items;
+            this.shouldScroll = shouldScroll;
+            this.scrollToPosition = scrollToPosition;
+        }
+
+        public ImmutableList<AdapterItem> items() {
+            return items;
+        }
+
+        public boolean shouldScroll() {
+            return shouldScroll;
+        }
+
+        public int scrollToPosition() {
+            return scrollToPosition;
+        }
+    }
+
+    static class DataMessageOrError {
+        private final DataMessage message;
+        private final Throwable error;
+
+        public DataMessageOrError(DataMessage message, Throwable error) {
+            this.message = message;
+            this.error = error;
         }
     }
 }

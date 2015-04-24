@@ -38,7 +38,7 @@ public class Socket {
         connection = socketConnection.connection()
                 .lift(new OperatorDoOnNext<>(events))
                 .lift(MoreObservables.ignoreNext())
-                .publish().refCount();
+                .compose(MoreObservables.behaviorRefCount());
         this.events = events;
 
 

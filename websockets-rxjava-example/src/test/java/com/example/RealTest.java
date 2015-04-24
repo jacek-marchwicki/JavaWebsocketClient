@@ -68,9 +68,9 @@ public class RealTest {
         final Subscription subscribe = socket.connection()
                 .subscribeOn(Schedulers.io())
                 .subscribe();
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         subscribe.unsubscribe();
-        Thread.sleep(5000);
+        Thread.sleep(10000);
     }
 
 }
