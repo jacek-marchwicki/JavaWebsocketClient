@@ -36,7 +36,7 @@ public class SocketTest {
     @Mock
     SocketConnection socketConnection;
     @Mock
-    Observer<RxJsonEvent> observer;
+    Observer<Object> observer;
     @Mock
     JsonWebSocketSender sender;
     @Mock
