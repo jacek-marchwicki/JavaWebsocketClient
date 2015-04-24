@@ -18,10 +18,11 @@ package com.appunite.socket;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Pair;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
@@ -31,28 +32,24 @@ import com.example.SocketConnection;
 import com.example.SocketConnectionImpl;
 import com.example.model.Message;
 import com.example.model.MessageType;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.view.ViewActions;
 import rx.android.view.ViewObservable;
 import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subscriptions.CompositeSubscription;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
 	private static final URI ADDRESS;
+	private static final String RETENTION_FRAGMENT_TAG = "retention_fragment_tag";
 
 	static {
 		try {
@@ -64,21 +61,38 @@ public class MainActivity extends Activity {
 
 	private CompositeSubscription subs;
 
+	public static class RetentionFragment extends Fragment {
+
+		private final MainPresenter presenter;
+
+		public RetentionFragment() {
+			final Gson gson = new GsonBuilder()
+					.registerTypeAdapter(Message.class, new Message.Deserializer())
+					.registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
+					.create();
+
+			final NewWebSocket newWebSocket = new NewWebSocket();
+			final RxWebSockets webSockets = new RxWebSockets(newWebSocket, ADDRESS);
+			final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
+			final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());
+			presenter = new MainPresenter(new Socket(socketConnection, Schedulers.io()), Schedulers.io(), AndroidSchedulers.mainThread());
+		}
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			setRetainInstance(true);
+		}
+
+		public MainPresenter presenter() {
+			return presenter;
+		}
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		final Gson gson = new GsonBuilder()
-				.registerTypeAdapter(Message.class, new Message.Deserializer())
-				.registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
-				.create();
-
-		final NewWebSocket newWebSocket = new NewWebSocket();
-		final RxWebSockets webSockets = new RxWebSockets(newWebSocket, ADDRESS);
-		final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
-		final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());
-		final MainPresenter presenter = new MainPresenter(new Socket(socketConnection, Schedulers.io()), Schedulers.io(), AndroidSchedulers.mainThread());
-
+		final MainPresenter presenter = getRetentionFragment(savedInstanceState).presenter();
 
 		setContentView(R.layout.main);
 		final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.main_activity_recycler_view);
@@ -139,6 +153,20 @@ public class MainActivity extends Activity {
 						.subscribe(presenter.disconnectClickObserver()),
 				ViewObservable.clicks(findViewById(R.id.send_button))
 						.subscribe(presenter.sendClickObserver()));
+	}
+
+	private RetentionFragment getRetentionFragment(Bundle savedInstanceState) {
+		if (savedInstanceState == null) {
+			final RetentionFragment retentionFragment = new RetentionFragment();
+			getSupportFragmentManager()
+					.beginTransaction()
+					.add(retentionFragment, RETENTION_FRAGMENT_TAG)
+					.commit();
+			return retentionFragment;
+		} else {
+			return (RetentionFragment) getSupportFragmentManager()
+					.findFragmentByTag(RETENTION_FRAGMENT_TAG);
+		}
 	}
 
 	@Override
