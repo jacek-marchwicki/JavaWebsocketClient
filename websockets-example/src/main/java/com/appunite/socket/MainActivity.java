@@ -36,7 +36,7 @@ import com.appunite.websocket.WrongWebsocketResponse;
 
 import javax.annotation.Nonnull;
 
-public class Main extends Activity implements OnClickListener {
+public class MainActivity extends Activity implements OnClickListener {
 
 
 	private static final URI ADDRESS;
@@ -141,12 +141,12 @@ public class Main extends Activity implements OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+		setContentView(R.layout.main_activity);
 
-		connectButton = findViewById(R.id.connect_button);
-		disconnectButton = findViewById(R.id.disconnect_button);
+		connectButton = findViewById(R.id.main_acitivity_connect_button);
+		disconnectButton = findViewById(R.id.main_activity_disconnect_button);
 		sendButton = findViewById(R.id.send_button);
-		final ListView listView = (ListView) findViewById(android.R.id.list);
+		final ListView listView = (ListView) findViewById(R.id.main_activity_list);
 
 		messages = new ArrayList<>();
 		adapter = new ArrayAdapter<>(this,
@@ -229,10 +229,10 @@ public class Main extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		int id = v.getId();
 		switch (id) {
-		case R.id.connect_button:
+		case R.id.main_acitivity_connect_button:
 			connect();
 			break;
-		case R.id.disconnect_button:
+		case R.id.main_activity_disconnect_button:
 			disconnect();
 			break;
 		case R.id.send_button:

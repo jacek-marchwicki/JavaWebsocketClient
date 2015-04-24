@@ -14,35 +14,35 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/connect_button"
+            android:id="@+id/main_activity_connect_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="connect" />
 
         <Button
-            android:id="@+id/disconnect_button"
+            android:id="@+id/macin_activity_disconnect_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="disconnect" />
 
         <Button
-            android:id="@+id/send_button"
+            android:id="@+id/main_activity_send_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="send" />
     </LinearLayout>
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/main_activity_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/items_layout" >
-    </ListView>
+        android:layout_below="@+id/items_layout" />
+
 
 </RelativeLayout>

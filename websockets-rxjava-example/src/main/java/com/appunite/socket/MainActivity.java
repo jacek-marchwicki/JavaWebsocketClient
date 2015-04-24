@@ -16,7 +16,6 @@
 
 package com.appunite.socket;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -61,40 +60,12 @@ public class MainActivity extends FragmentActivity {
 
 	private CompositeSubscription subs;
 
-	public static class RetentionFragment extends Fragment {
-
-		private final MainPresenter presenter;
-
-		public RetentionFragment() {
-			final Gson gson = new GsonBuilder()
-					.registerTypeAdapter(Message.class, new Message.Deserializer())
-					.registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
-					.create();
-
-			final NewWebSocket newWebSocket = new NewWebSocket();
-			final RxWebSockets webSockets = new RxWebSockets(newWebSocket, ADDRESS);
-			final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
-			final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());
-			presenter = new MainPresenter(new Socket(socketConnection, Schedulers.io()), Schedulers.io(), AndroidSchedulers.mainThread());
-		}
-
-		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			setRetainInstance(true);
-		}
-
-		public MainPresenter presenter() {
-			return presenter;
-		}
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		final MainPresenter presenter = getRetentionFragment(savedInstanceState).presenter();
 
-		setContentView(R.layout.main);
+		setContentView(R.layout.main_activity);
 		final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.main_activity_recycler_view);
 		final LinearLayoutManager layout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		recyclerView.setLayoutManager(layout);
@@ -103,7 +74,6 @@ public class MainActivity extends FragmentActivity {
 		recyclerView.setItemAnimator(new DefaultItemAnimator());
 
 		final BehaviorSubject<Boolean> isLastSubject = BehaviorSubject.create(true);
-
 		recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
 			boolean manualScrolling = false;
 
@@ -142,16 +112,16 @@ public class MainActivity extends FragmentActivity {
 							}
 						}),
 				presenter.connectButtonEnabledObservable()
-					.subscribe(ViewActions.setEnabled(findViewById(R.id.connect_button))),
+					.subscribe(ViewActions.setEnabled(findViewById(R.id.main_activity_connect_button))),
 				presenter.disconnectButtonEnabledObservable()
-						.subscribe(ViewActions.setEnabled(findViewById(R.id.disconnect_button))),
+						.subscribe(ViewActions.setEnabled(findViewById(R.id.macin_activity_disconnect_button))),
 				presenter.sendButtonEnabledObservable()
-						.subscribe(ViewActions.setEnabled(findViewById(R.id.send_button))),
-				ViewObservable.clicks(findViewById(R.id.connect_button))
+						.subscribe(ViewActions.setEnabled(findViewById(R.id.main_activity_send_button))),
+				ViewObservable.clicks(findViewById(R.id.main_activity_connect_button))
 						.subscribe(presenter.connectClickObserver()),
-				ViewObservable.clicks(findViewById(R.id.disconnect_button))
+				ViewObservable.clicks(findViewById(R.id.macin_activity_disconnect_button))
 						.subscribe(presenter.disconnectClickObserver()),
-				ViewObservable.clicks(findViewById(R.id.send_button))
+				ViewObservable.clicks(findViewById(R.id.main_activity_send_button))
 						.subscribe(presenter.sendClickObserver()));
 	}
 
@@ -173,6 +143,34 @@ public class MainActivity extends FragmentActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		subs.unsubscribe();
+	}
+
+	public static class RetentionFragment extends Fragment {
+
+		private final MainPresenter presenter;
+
+		public RetentionFragment() {
+			final Gson gson = new GsonBuilder()
+					.registerTypeAdapter(Message.class, new Message.Deserializer())
+					.registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
+					.create();
+
+			final NewWebSocket newWebSocket = new NewWebSocket();
+			final RxWebSockets webSockets = new RxWebSockets(newWebSocket, ADDRESS);
+			final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
+			final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());
+			presenter = new MainPresenter(new Socket(socketConnection, Schedulers.io()), Schedulers.io(), AndroidSchedulers.mainThread());
+		}
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			setRetainInstance(true);
+		}
+
+		public MainPresenter presenter() {
+			return presenter;
+		}
 	}
 
 }

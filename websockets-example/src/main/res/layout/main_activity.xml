@@ -14,14 +14,14 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/connect_button"
+            android:id="@+id/main_acitivity_connect_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="connect" />
 
         <Button
-            android:id="@+id/disconnect_button"
+            android:id="@+id/main_activity_disconnect_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -35,14 +35,14 @@
             android:text="send" />
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/main_activity_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <ListView
+        android:id="@+id/main_activity_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/items_layout" />
-
+        android:layout_below="@+id/items_layout" >
+    </ListView>
 
 </RelativeLayout>
