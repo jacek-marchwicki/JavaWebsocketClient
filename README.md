@@ -12,7 +12,7 @@ In examples we use [python twisted server](websockets-server/README.md)
 		
 # License
 
-    Copyright [2012] [Jacek Marchwicki <jacek.marchwicki@gmail.com>]
+    Copyright [2015] [Jacek Marchwicki <jacek.marchwicki@gmail.com>]
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
