@@ -40,6 +40,7 @@ public class SocketConnectionImpl implements SocketConnection {
                             @Override
                             public Observable<?> call(Throwable aLong) {
                                 return Observable.timer(delay, timeUnit, scheduler);
+//                                return Observable.just(new Object());
                             }
                         });
             }

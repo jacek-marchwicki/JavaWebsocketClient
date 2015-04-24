@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     compile project(":websockets")
-    compile "io.reactivex:rxjava:1.0.8"
+    compile "io.reactivex:rxjava:1.0.9"
     compile "com.google.code.gson:gson:2.3"
     //compile "com.appunite:websockets:1.0"
 

@@ -35,15 +35,14 @@
             android:text="send" />
     </LinearLayout>
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/main_activity_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:transcriptMode="normal"
-        android:layout_below="@+id/items_layout" >
-    </ListView>
+        android:layout_below="@+id/items_layout" />
+
 
 </RelativeLayout>
