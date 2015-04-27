@@ -17,9 +17,11 @@
 package com.example;
 
 import com.appunite.websocket.NewWebSocket;
+import com.appunite.websocket.rx.RxMoreObservables;
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.json.RxJsonWebSockets;
-import com.example.model.DataMessage;
+import com.appunite.websocket.rx.messages.RxEvent;
+import com.appunite.websocket.rx.messages.RxEventConnected;
 import com.example.model.Message;
 import com.example.model.MessageType;
 import com.google.gson.Gson;
@@ -31,14 +33,13 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 
 import rx.Observable;
 import rx.Subscription;
-import rx.functions.Func1;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class RealTest2 {
+public class RxJsonWebSocketsRealTest {
 
     private static final URI SERVER_URI;
 
@@ -51,7 +52,7 @@ public class RealTest2 {
     }
 
 
-    private RxWebSockets socket;
+    private RxJsonWebSockets socket;
 
     @Before
     public void setUp() throws Exception {
@@ -61,8 +62,7 @@ public class RealTest2 {
                 .create();
 
         final NewWebSocket newWebSocket = new NewWebSocket();
-        socket = new RxWebSockets(newWebSocket, SERVER_URI);
-
+        socket = new RxJsonWebSockets(new RxWebSockets(newWebSocket, SERVER_URI), gson, Message.class);;
     }
 
     @Test

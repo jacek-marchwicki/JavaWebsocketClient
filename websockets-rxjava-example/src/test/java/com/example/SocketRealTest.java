@@ -38,7 +38,7 @@ import rx.Subscription;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class RealTest {
+public class SocketRealTest {
 
     private static final URI SERVER_URI;
 
