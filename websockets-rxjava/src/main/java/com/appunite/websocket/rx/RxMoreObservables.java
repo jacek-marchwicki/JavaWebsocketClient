@@ -104,7 +104,7 @@ public class RxMoreObservables {
     /**
      * Transformer that convert Object message to observable that returns if message was sent
      *
-     * Object is parsed via gson given by {@link RxJsonWebSockets(RxWebSockets, Gson, Type)}
+     * Object is parsed via gson given by {@link RxJsonWebSockets#RxJsonWebSockets(RxWebSockets, Gson, Type)}
      * @param connection connection event that is used to send message
      * @return Observable that returns {@link Observer#onNext(Object)} with new Object()
      *         and {@link Observer#onCompleted()} or {@link Observer#onError(Throwable)}

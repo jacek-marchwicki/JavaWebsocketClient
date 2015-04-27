@@ -49,9 +49,9 @@ public class RxJsonEventMessage extends RxJsonEventConn {
      *
      * @throws ClassCastException when wrong try to get wrong type of message
      */
+    @SuppressWarnings("unchecked")
     @Nonnull
     public <T> T message() throws ClassCastException {
-        //noinspection unchecked
         return (T) message;
     }
 

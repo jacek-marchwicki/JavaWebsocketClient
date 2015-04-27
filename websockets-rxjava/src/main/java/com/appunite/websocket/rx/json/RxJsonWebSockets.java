@@ -68,7 +68,7 @@ public class RxJsonWebSockets {
      * Returns observable that connected to a websocket and returns {@link RxJsonEvent}s
      *
      * @return Observable that connects to websocket
-     * @see RxWebSockets#webSocketObservable()}
+     * @see RxWebSockets#webSocketObservable()
      */
     @Nonnull
     public Observable<RxJsonEvent> webSocketObservable() {
