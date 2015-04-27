@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2015 Jacek Marchwicki <jacek.marchwicki@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License
+ */
+
 package com.appunite.websocket;
 
 import com.appunite.websocket.internal.SecureRandomProvider;
@@ -12,7 +28,6 @@ import org.apache.http.message.BasicLineParser;
 import org.apache.http.util.EncodingUtils;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
@@ -29,7 +44,10 @@ import static com.appunite.websocket.tools.Preconditions.checkArgument;
 import static com.appunite.websocket.tools.Preconditions.checkNotNull;
 import static com.appunite.websocket.tools.Preconditions.checkState;
 
-public class WebSocketConnection {
+/**
+ * Class represents single web socket connection
+ */
+public class WebSocketConnection implements WebSocketSender {
 
     // Default ports
     private static final int DEFAULT_WSS_PORT = 443;
@@ -124,17 +142,16 @@ public class WebSocketConnection {
             readHandshakeHeaders(inputStream, secret);
         } catch (IOException e) {
             synchronized (stateLock) {
+                outputStream = null;
                 if (State.DISCONNECTING.equals(state)) {
+                    state = State.DISCONNECTED;
+                    stateLock.notifyAll();
                     throw new InterruptedException();
                 } else {
+                    state = State.DISCONNECTED;
+                    stateLock.notifyAll();
                     throw e;
                 }
-            }
-        } finally {
-            synchronized (stateLock) {
-                state = State.DISCONNECTED;
-                outputStream = null;
-                stateLock.notifyAll();
             }
         }
 
@@ -198,10 +215,12 @@ public class WebSocketConnection {
     private void writeHeaders(@Nonnull URI uri, @Nonnull String secret) throws IOException {
         checkNotNull(uri);
         checkNotNull(secret);
+        final String portPart = uri.getPort() < 0 || uri.getPort() == 80 ? "" : ":"+String.valueOf(uri.getPort());
+
         outputStream.writeLine("GET " + uri.getPath() + " HTTP/1.1");
         outputStream.writeLine("Upgrade: websocket");
         outputStream.writeLine("Connection: Upgrade");
-        outputStream.writeLine("Host: " + uri.getHost());
+        outputStream.writeLine("Host: " + uri.getHost()+portPart);
         outputStream.writeLine("Origin: " + uri);
         outputStream.writeLine("Sec-WebSocket-Key: " + secret);
         outputStream.writeLine("Sec-WebSocket-Protocol: chat");
@@ -269,39 +288,13 @@ public class WebSocketConnection {
         }
     }
 
-    /**
-     * Send binary message (thread safe). Can be called after onConnect and
-     * before onDisconnect by any thread. Thread will be blocked until send
-     *
-     * @param buffer
-     *            buffer to send
-     * @throws IOException
-     *             when exception occur while sending
-     * @throws InterruptedException
-     *             when user call disconnect
-     * @throws NotConnectedException
-     *             when called before onConnect or after onDisconnect
-     */
-    @SuppressWarnings("UnusedDeclaration")
+    @Override
     public void sendByteMessage(@Nonnull byte[] buffer) throws IOException,
             InterruptedException, NotConnectedException {
         sendMessage(OPCODE_BINARY_FRAME, generateMask(), buffer);
     }
 
-    /**
-     * Send ping request (thread safe). Can be called after onConnect and
-     * before onDisconnect by any thread. Thread will be blocked until send
-     *
-     * @param buffer
-     *            buffer to send
-     * @throws IOException
-     *             when exception occur while sending
-     * @throws InterruptedException
-     *             when user call disconnect
-     * @throws NotConnectedException
-     *             when called before onConnect or after onDisconnect
-     */
-    @SuppressWarnings("UnusedDeclaration")
+    @Override
     public void sendPingMessage(@Nonnull byte[] buffer) throws IOException,
             InterruptedException, NotConnectedException {
         sendMessage(OPCODE_PING_FRAME, generateMask(), buffer);
@@ -312,19 +305,8 @@ public class WebSocketConnection {
         sendMessage(OPCODE_PONG_FRAME, generateMask(), buffer);
     }
 
-    /**
-     * Send text message (thread safe). Can be called after onConnect and before
-     * onDisconnect by any thread. Thread will be blocked until send
-     *
-     * @param message
-     *            message to send
-     * @throws IOException
-     *             when exception occur while sending
-     * @throws InterruptedException
-     *             when user call disconnect
-     * @throws NotConnectedException
-     *             when called before onConnect or after onDisconnect
-     */
+
+    @Override
     public void sendStringMessage(@Nonnull String message) throws IOException,
             InterruptedException, NotConnectedException {
         checkNotNull(message, "Message can not be null");
@@ -532,6 +514,7 @@ public class WebSocketConnection {
      *
      *
      * @param outputStream
+     *          output stream for sending header data
      * @param fin
      *            if message is last from sequence
      * @param opcode
@@ -670,14 +653,14 @@ public class WebSocketConnection {
             }
             if (State.CONNECTING.equals(state)
                     || State.CONNECTED.equals(state)) {
-                try {
-                    socket.close();
-                } catch (IOException ignore) {
-                }
                 state = State.DISCONNECTING;
                 stateLock.notifyAll();
             }
             while (!State.DISCONNECTED.equals(state)) {
+                try {
+                    socket.close();
+                } catch (IOException ignore) {
+                }
                 try {
                     stateLock.wait();
                 } catch (InterruptedException ignore) {
