@@ -20,8 +20,9 @@ import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.NotConnectedException;
 import com.appunite.websocket.WebSocketConnection;
 import com.appunite.websocket.WebSocketListener;
+import com.appunite.websocket.rx.json.messages.RxJsonEvent;
 import com.appunite.websocket.rx.messages.RxEvent;
-import com.appunite.websocket.rx.messages.RxEventBinarryMessage;
+import com.appunite.websocket.rx.messages.RxEventBinaryMessage;
 import com.appunite.websocket.rx.messages.RxEventConnected;
 import com.appunite.websocket.rx.messages.RxEventDisconnected;
 import com.appunite.websocket.rx.messages.RxEventPing;
@@ -32,16 +33,12 @@ import com.appunite.websocket.rx.messages.RxEventUnknownMessage;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.internal.schedulers.ScheduledAction;
-import rx.observers.Subscribers;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -49,8 +46,11 @@ import rx.subscriptions.Subscriptions;
  */
 public class RxWebSockets {
 
-    public static final Logger logger = Logger.getLogger("RxWebSockets");
-
+    /**
+     * Create instance of {@link RxWebSockets}
+     * @param newWebSocket {@link NewWebSocket} instance
+     * @param uri uri for websocket (eg. "wss://some.server/endpoint")
+     */
     public RxWebSockets(@Nonnull NewWebSocket newWebSocket, @Nonnull final URI uri) {
         this.newWebSocket = newWebSocket;
         this.uri = uri;
@@ -61,6 +61,11 @@ public class RxWebSockets {
     @Nonnull
     private final URI uri;
 
+    /**
+     * Returns observable that connected to a websocket and returns {@link RxJsonEvent}'s
+     *
+     * @return Observable that connects to websocket
+     */
     @Nonnull
     public Observable<RxEvent> webSocketObservable() {
         return Observable.create(new Observable.OnSubscribe<RxEvent>() {
@@ -82,7 +87,7 @@ public class RxWebSockets {
 
                     @Override
                     public void onBinaryMessage(@Nonnull byte[] data) throws IOException, InterruptedException, NotConnectedException {
-                        subscriber.onNext(new RxEventBinarryMessage(connection, data));
+                        subscriber.onNext(new RxEventBinaryMessage(connection, data));
                     }
 
                     @Override

@@ -20,6 +20,10 @@ import com.appunite.websocket.WebSocketSender;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Abstract class for {@link RxEvent} that allows sending messages to the server using
+ * {@link #sender()} method
+ */
 public abstract class RxEventConn extends RxEvent {
     @Nonnull
     private final WebSocketSender sender;
@@ -28,6 +32,13 @@ public abstract class RxEventConn extends RxEvent {
         this.sender = sender;
     }
 
+    /**
+     * Get sender
+     *
+     * Sender is valid until disconnection from server ({@link RxEventDisconnected} event)
+     *
+     * @return instance of {@link WebSocketSender} that allows you to send back messages to server
+     */
     @Nonnull
     public WebSocketSender sender() {
         return sender;

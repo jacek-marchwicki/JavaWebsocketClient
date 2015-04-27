@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicate that server send ping request
+ */
 public class RxEventPing extends RxEventBinaryMessageAbs {
 
     public RxEventPing(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {

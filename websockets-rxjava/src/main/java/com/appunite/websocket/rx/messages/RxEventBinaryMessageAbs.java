@@ -20,7 +20,16 @@ import com.appunite.websocket.WebSocketSender;
 
 import javax.annotation.Nonnull;
 
-abstract class RxEventBinaryMessageAbs extends RxEventConn {
+/**
+ * Abstract class for binary messages returned by server
+ *
+ * @see RxEventBinaryMessage
+ * @see RxEventPing
+ * @see RxEventPong
+ * @see RxEventUnknownMessage
+ * @see RxEventServerRequestedClose
+ */
+public abstract class RxEventBinaryMessageAbs extends RxEventConn {
 
     @Nonnull
     private final byte[] message;
@@ -30,6 +39,11 @@ abstract class RxEventBinaryMessageAbs extends RxEventConn {
         this.message = message;
     }
 
+    /**
+     * Binary message that was returned by server
+     *
+     * @return binary message
+     */
     @Nonnull
     public byte[] message() {
         return message;

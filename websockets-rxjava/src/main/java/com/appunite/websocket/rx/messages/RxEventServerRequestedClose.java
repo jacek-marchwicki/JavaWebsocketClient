@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicating that server requested close connection
+ */
 public class RxEventServerRequestedClose extends RxEventBinaryMessageAbs {
 
     public RxEventServerRequestedClose(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {

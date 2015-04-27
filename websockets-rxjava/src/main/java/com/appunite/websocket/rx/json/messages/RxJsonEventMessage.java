@@ -17,12 +17,22 @@
 package com.appunite.websocket.rx.json.messages;
 
 import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.messages.RxEventStringMessage;
+import com.google.gson.JsonParseException;
 
 import javax.annotation.Nonnull;
 
 import rx.Observable;
 import rx.functions.Func1;
 
+/**
+ * Event indicating that json was returned by server and was parsed
+ *
+ * If {@link JsonParseException} occur than {@link RxJsonEventWrongMessageFormat} event
+ * will be served
+ *
+ * @see RxEventStringMessage
+ */
 public class RxJsonEventMessage extends RxJsonEventConn {
     @Nonnull
     private final Object message;
@@ -32,8 +42,15 @@ public class RxJsonEventMessage extends RxJsonEventConn {
         this.message = message;
     }
 
+    /**
+     * Served parse message
+     * @param <T> Class type of message
+     * @return a message that was returned
+     *
+     * @throws ClassCastException when wrong try to get wrong type of message
+     */
     @Nonnull
-    public <T> T message() {
+    public <T> T message() throws ClassCastException {
         //noinspection unchecked
         return (T) message;
     }
@@ -45,6 +62,13 @@ public class RxJsonEventMessage extends RxJsonEventConn {
                 '}';
     }
 
+    /**
+     * Transform one observable to observable of given type filtering by a type
+     *
+     * @param clazz type of message that you would like get
+     * @param <T> type of message that you would like get
+     * @return Observable that returns given type of message
+     */
     @Nonnull
     public static <T> Observable.Transformer<RxJsonEventMessage, T> filterAndMap(@Nonnull final Class<T> clazz) {
         return new Observable.Transformer<RxJsonEventMessage, T>() {

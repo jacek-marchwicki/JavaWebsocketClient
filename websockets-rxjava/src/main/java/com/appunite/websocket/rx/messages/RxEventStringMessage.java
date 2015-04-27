@@ -20,6 +20,9 @@ import com.appunite.websocket.WebSocketSender;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicating that server sent a string message
+ */
 public class RxEventStringMessage extends RxEventConn {
 
     @Nonnull
@@ -30,6 +33,10 @@ public class RxEventStringMessage extends RxEventConn {
         this.message = message;
     }
 
+    /**
+     * String message that was returned by server
+     * @return string message
+     */
     @Nonnull
     public String message() {
         return message;

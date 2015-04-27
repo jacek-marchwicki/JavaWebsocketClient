@@ -20,6 +20,9 @@ import com.appunite.websocket.WebSocketSender;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicate that client was connected to the server
+ */
 public class RxEventConnected extends RxEventConn {
 
     public RxEventConnected(@Nonnull WebSocketSender sender) {

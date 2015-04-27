@@ -19,6 +19,9 @@ package com.appunite.websocket.internal;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Class for generating random numbers
+ */
 public interface SecureRandomProvider {
 
     /**

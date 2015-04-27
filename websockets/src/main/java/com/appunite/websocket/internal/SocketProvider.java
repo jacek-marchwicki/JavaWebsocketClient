@@ -22,8 +22,17 @@ import java.net.URI;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Class provides factory for socket
+ */
 public interface SocketProvider {
 
+    /**
+     * Get socket for given uri
+     * @param uri uri for socket
+     * @return socket for uri
+     * @throws IOException
+     */
     @Nonnull
 	Socket getSocket(@Nonnull URI uri) throws IOException;
 }

@@ -26,6 +26,9 @@ import javax.net.ssl.SSLSocketFactory;
 
 import static com.appunite.websocket.tools.Preconditions.checkNotNull;
 
+/**
+ * Implementation of {@link SocketProvider}
+ */
 public class SocketProviderImpl implements SocketProvider {
 
     @Nonnull

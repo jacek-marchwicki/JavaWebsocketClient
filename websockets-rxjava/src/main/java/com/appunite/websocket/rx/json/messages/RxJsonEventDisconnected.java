@@ -16,8 +16,19 @@
 
 package com.appunite.websocket.rx.json.messages;
 
+import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.messages.RxEventDisconnected;
+
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicate that client was disconnected to the server
+ *
+ * since then all execution on previosly returned {@link JsonWebSocketSender} will cause throwing
+ * {@link com.appunite.websocket.NotConnectedException}
+ *
+ * See: {@link RxEventDisconnected}
+ */
 public class RxJsonEventDisconnected extends RxJsonEvent {
     @Nonnull
     private final Exception exception;
@@ -27,6 +38,9 @@ public class RxJsonEventDisconnected extends RxJsonEvent {
         this.exception = exception;
     }
 
+    /**
+     * See: {@link RxEventDisconnected#exception()}
+     */
     @Nonnull
     public Exception exception() {
         return exception;

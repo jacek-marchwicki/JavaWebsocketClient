@@ -42,6 +42,8 @@ import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 public class Socket {
+    public static final Logger LOGGER = Logger.getLogger("Rx");
+
     private final Observable<RxJsonEvent> events;
     private final Observable<Object> connection;
     private final BehaviorSubject<RxJsonEventConn> connectedAndRegistered;
@@ -79,21 +81,21 @@ public class Socket {
         // Register on connected
         final Observable<RxJsonEventConnected> connectedMessage = events
                 .compose(com.example.MoreObservables.filterAndMap(RxJsonEventConnected.class))
-                .lift(LoggingObservables.<RxJsonEventConnected>loggingLift(Logger.getLogger("Rx"), "ConnectedEvent"));
+                .lift(LoggingObservables.<RxJsonEventConnected>loggingLift(LOGGER, "ConnectedEvent"));
 
         connectedMessage
                 .flatMap(new FlatMapToRegisterMessage())
-                .lift(LoggingObservables.loggingOnlyErrorLift(Logger.getLogger("Rx"), "SendRegisterEvent"))
+                .lift(LoggingObservables.loggingOnlyErrorLift(LOGGER, "SendRegisterEvent"))
                 .onErrorReturn(com.example.MoreObservables.throwableToIgnoreError())
                 .subscribe();
 
         // Log events
-        Logger.getLogger("Rx").setLevel(Level.ALL);
-        RxWebSockets.logger.setLevel(Level.ALL);
+        LOGGER.setLevel(Level.ALL);
+        RxMoreObservables.logger.setLevel(Level.ALL);
         events
-                .subscribe(LoggingObservables.logging(Logger.getLogger("Rx"), "Events"));
+                .subscribe(LoggingObservables.logging(LOGGER, "Events"));
         connectedAndRegistered
-                .subscribe(LoggingObservables.logging(Logger.getLogger("Rx"), "ConnectedAndRegistered"));
+                .subscribe(LoggingObservables.logging(LOGGER, "ConnectedAndRegistered"));
     }
     public Observable<RxJsonEvent> events() {
         return events;

@@ -16,5 +16,16 @@
 
 package com.appunite.websocket.rx.json.messages;
 
+/**
+ * Abstract class for all RxJsonEvents
+ *
+ * @see RxJsonEventConnected
+ * @see RxJsonEventConnected
+ * @see RxJsonEventMessage
+ * @see RxJsonEventWrongMessageFormat
+ */
 public abstract class RxJsonEvent {
+
+    @Override
+    public abstract  String toString();
 }

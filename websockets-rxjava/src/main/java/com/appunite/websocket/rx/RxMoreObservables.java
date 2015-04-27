@@ -18,18 +18,25 @@ package com.appunite.websocket.rx;
 
 import com.appunite.websocket.WebSocketSender;
 import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.json.RxJsonWebSockets;
 import com.appunite.websocket.rx.json.messages.RxJsonEventConn;
 import com.appunite.websocket.rx.messages.RxEventConn;
+import com.google.gson.Gson;
 
+import java.lang.reflect.Type;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
 import rx.Observable;
+import rx.Observer;
 import rx.Subscriber;
 import rx.functions.Func1;
 
 public class RxMoreObservables {
+
+    public static final Logger logger = Logger.getLogger("RxWebSockets");
 
     public RxMoreObservables() {
     }
@@ -40,7 +47,7 @@ public class RxMoreObservables {
             @Override
             public void call(Subscriber<? super Object> subscriber) {
                 try {
-                    RxWebSockets.logger.log(Level.FINE, "sendStringMessage: {0}", message);
+                    logger.log(Level.FINE, "sendStringMessage: {0}", message);
                     sender.sendStringMessage(message);
                     subscriber.onNext(new Object());
                     subscriber.onCompleted();
@@ -51,8 +58,18 @@ public class RxMoreObservables {
         });
     }
 
+    /**
+     * Transformer that convert String message to observable that returns if message was sent
+     *
+     * @param connection connection event that is used to send message
+     * @return Observable that returns {@link Observer#onNext(Object)} with new Object()
+     *         and {@link Observer#onCompleted()} or {@link Observer#onError(Throwable)}
+     *
+     * @see #sendMessage(JsonWebSocketSender, Object)
+     */
+    @SuppressWarnings("unused")
     @Nonnull
-    public static Observable.Transformer<String, Object> sendMessage(final RxEventConn connection) {
+    public static Observable.Transformer<String, Object> sendMessage(@Nonnull final RxEventConn connection) {
         return new Observable.Transformer<String, Object>() {
             @Override
             public Observable<Object> call(Observable<String> stringObservable) {
@@ -72,7 +89,7 @@ public class RxMoreObservables {
             @Override
             public void call(Subscriber<? super Object> subscriber) {
                 try {
-                    RxWebSockets.logger.log(Level.FINE, "sendStringMessage: {0}", message.toString());
+                    logger.log(Level.FINE, "sendStringMessage: {0}", message.toString());
                     sender.sendObjectMessage(message);
                     subscriber.onNext(new Object());
                     subscriber.onCompleted();
@@ -84,9 +101,19 @@ public class RxMoreObservables {
     }
 
 
-
+    /**
+     * Transformer that convert Object message to observable that returns if message was sent
+     *
+     * Object is parsed via gson given by {@link RxJsonWebSockets(RxWebSockets, Gson, Type)}
+     * @param connection connection event that is used to send message
+     * @return Observable that returns {@link Observer#onNext(Object)} with new Object()
+     *         and {@link Observer#onCompleted()} or {@link Observer#onError(Throwable)}
+     *
+     * @see #sendMessage(RxEventConn)
+     */
+    @SuppressWarnings("unused")
     @Nonnull
-    public static Observable.Transformer<Object, Object> sendMessage(final RxJsonEventConn connection) {
+    public static Observable.Transformer<Object, Object> sendMessage(@Nonnull final RxJsonEventConn connection) {
         return new Observable.Transformer<Object, Object>() {
             @Override
             public Observable<Object> call(Observable<Object> stringObservable) {

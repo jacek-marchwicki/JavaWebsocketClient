@@ -20,6 +20,9 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Interface allows user to send messages to websocket
+ */
 public interface WebSocketSender {
     /**
      * Send ping request (thread safe). Can be called after onConnect and

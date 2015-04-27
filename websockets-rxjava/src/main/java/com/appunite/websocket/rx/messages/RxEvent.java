@@ -16,6 +16,18 @@
 
 package com.appunite.websocket.rx.messages;
 
+/**
+ * Abstract class for all RxEvents
+ *
+ * @see RxEventConnected
+ * @see RxEventDisconnected
+ * @see RxEventBinaryMessage
+ * @see RxEventStringMessage
+ * @see RxEventPing
+ * @see RxEventPong
+ * @see RxEventServerRequestedClose
+ * @see RxEventUnknownMessage
+ */
 public abstract class RxEvent {
 
     public RxEvent() {

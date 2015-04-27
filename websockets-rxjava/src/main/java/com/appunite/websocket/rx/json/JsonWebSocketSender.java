@@ -17,11 +17,19 @@
 package com.appunite.websocket.rx.json;
 
 import com.appunite.websocket.NotConnectedException;
+import com.appunite.websocket.rx.json.messages.RxJsonEventConnected;
+import com.appunite.websocket.rx.json.messages.RxJsonEventDisconnected;
 
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Interface that allows send object that is parsed and send via websocket to server
+ *
+ * It is valid since {@link RxJsonEventConnected} until
+ * {@link RxJsonEventDisconnected}
+ */
 public interface JsonWebSocketSender {
     /**
      * Send text message (thread safe). Can be called after onConnect and before

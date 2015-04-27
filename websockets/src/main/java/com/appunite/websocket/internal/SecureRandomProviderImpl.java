@@ -25,6 +25,9 @@ import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Implementation of {@link SecureRandomProvider}
+ */
 public class SecureRandomProviderImpl implements SecureRandomProvider {
 
     private boolean error = false;

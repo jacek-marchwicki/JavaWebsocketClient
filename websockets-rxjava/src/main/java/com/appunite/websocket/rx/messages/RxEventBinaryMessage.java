@@ -22,15 +22,18 @@ import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
-public class RxEventBinarryMessage extends RxEventBinaryMessageAbs {
+/**
+ * Event indicating that binary was returned by server
+ */
+public class RxEventBinaryMessage extends RxEventBinaryMessageAbs {
 
-    public RxEventBinarryMessage(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {
+    public RxEventBinaryMessage(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {
         super(sender, message);
     }
 
     @Override
     public String toString() {
-        return "PongMessageRxEvent{" +
+        return "RxEventBinaryMessage{" +
                 "message=" + Arrays.toString(message()) +
                 '}';
     }

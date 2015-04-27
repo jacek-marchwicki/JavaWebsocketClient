@@ -50,12 +50,26 @@ public class RxJsonWebSockets {
     @Nonnull
     private final Type typeOfT;
 
+    /**
+     * Creates {@link RxJsonWebSockets}
+     *
+     * @param rxWebSockets socket that is used to connect to server
+     * @param gson that is used to parse messages {@link RxJsonEventMessage}
+     *             and {@link JsonWebSocketSender#sendObjectMessage(Object)}
+     * @param typeOfT type of class that is parsed to {@link RxJsonEventMessage}
+     */
     public RxJsonWebSockets(@Nonnull RxWebSockets rxWebSockets, @Nonnull Gson gson, @Nonnull Type typeOfT) {
         this.rxWebSockets = rxWebSockets;
         this.gson = gson;
         this.typeOfT = typeOfT;
     }
 
+    /**
+     * Returns observable that connected to a websocket and returns {@link RxJsonEvent}s
+     *
+     * @return Observable that connects to websocket
+     * @see RxWebSockets#webSocketObservable()}
+     */
     @Nonnull
     public Observable<RxJsonEvent> webSocketObservable() {
         return rxWebSockets.webSocketObservable()

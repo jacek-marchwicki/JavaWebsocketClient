@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicating that server sent a unknown message
+ */
 public class RxEventUnknownMessage extends RxEventBinaryMessageAbs {
 
     public RxEventUnknownMessage(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {

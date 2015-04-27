@@ -44,6 +44,9 @@ import static com.appunite.websocket.tools.Preconditions.checkArgument;
 import static com.appunite.websocket.tools.Preconditions.checkNotNull;
 import static com.appunite.websocket.tools.Preconditions.checkState;
 
+/**
+ * Class represents single web socket connection
+ */
 public class WebSocketConnection implements WebSocketSender {
 
     // Default ports

@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicate that server send pong response
+ */
 public class RxEventPong extends RxEventBinaryMessageAbs {
 
     public RxEventPong(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {

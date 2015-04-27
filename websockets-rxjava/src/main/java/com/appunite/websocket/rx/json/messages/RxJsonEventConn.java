@@ -17,9 +17,16 @@
 package com.appunite.websocket.rx.json.messages;
 
 import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.messages.RxEventConn;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Abstract class for {@link RxJsonEvent} that allows sending messages to the server using
+ * {@link #sender()} method
+ *
+ * @see RxEventConn
+ */
 public abstract class RxJsonEventConn extends RxJsonEvent {
     @Nonnull
     private final JsonWebSocketSender sender;
@@ -28,6 +35,14 @@ public abstract class RxJsonEventConn extends RxJsonEvent {
         this.sender = sender;
     }
 
+    /**
+     * Get sender
+     *
+     * Sender is valid until disconnection from server ({@link RxJsonEventDisconnected} event)
+     *
+     * @return instance of {@link JsonWebSocketSender} that allows you to send back messages to server
+     * @see RxEventConn#sender()
+     */
     @Nonnull
     public JsonWebSocketSender sender() {
         return sender;

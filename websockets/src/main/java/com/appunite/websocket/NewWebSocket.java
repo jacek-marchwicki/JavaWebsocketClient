@@ -39,7 +39,6 @@ import static com.appunite.websocket.tools.Preconditions.checkNotNull;
  */
 public class NewWebSocket {
 
-	// Not need to be locked
 	@Nonnull
     private final SecureRandomProvider secureRandomProvider;
 	@Nonnull

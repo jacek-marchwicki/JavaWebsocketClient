@@ -17,9 +17,15 @@
 package com.appunite.websocket.rx.json.messages;
 
 import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.messages.RxEventConnected;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicate that client was connected to the server
+ *
+ * @see RxEventConnected
+ */
 public class RxJsonEventConnected extends RxJsonEventConn {
     public RxJsonEventConnected(@Nonnull JsonWebSocketSender sender) {
         super(sender);
