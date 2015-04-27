@@ -4,7 +4,7 @@ It is designed to be fast and fault tolerant.
 
 [![Build Status](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient.svg?branch=master)](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient)
 
-# Content fo the package
+## Content of the package
 
 * Example websockets server [python twisted server](websockets-server/README.md)
 * Imperative websocket client library `websockets/`
@@ -73,8 +73,27 @@ For examples look:
 * Example Real tests: [RxJsonWebSocketsRealTest](websockets-rxjava-example/src/test/java/com/example/RxJsonWebSocketsRealTest.java), [RxWebSocketsRealTest](websockets-rxjava-example/src/test/java/com/example/RxWebSocketsRealTest.java), [SocketRealTest](websockets-rxjava-example/src/test/java/com/example/SocketRealTest.java)
 * [Unit test](websockets-rxjava-example/src/test/java/com/example/SocketTest.java)
 
+## Rx-java with json parser
 
-# Run example from gradle
+```java
+class YourMessage {
+    public String response;
+    public String error;
+}
+
+final RxJsonWebSockets rxJsonWebSockets = new RxJsonWebSockets(new RxWebSockets(new NewWebSocket(), SERVER_URI), new GsonBuilder().create(), Message.class);
+rxJsonWebSockets.webSocketObservable()
+        .compose(MoreObservables.filterAndMap(RxJsonEventMessage.class))
+        .compose(RxJsonEventMessage.filterAndMap(YourMessage.class))
+        .subscribe(new Action1<YourMessage>() {
+            @Override
+            public void call(YourMessage yourMessage) {
+                System.out.println("your message: " + yourMessage.response);
+            }
+        });
+```
+
+## Run examples from gradle
 
 To run example first run [websocket server](websockets-server/README.md), than update url to your host in:
 * [Rx-java Activity](websockets-rxjava-example/src/main/java/com/appunite/socket/MainActivity.java)
@@ -92,7 +111,7 @@ Imperative example:
 ./gradlew :websockets-example:installDebug
 ```
 		
-# License
+## License
 
     Copyright [2015] [Jacek Marchwicki <jacek.marchwicki@gmail.com>]
     
