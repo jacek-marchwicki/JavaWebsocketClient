@@ -76,6 +76,10 @@ For examples look:
 
 # Run example from gradle
 
+To run example first run [websocket server](websockets-server/README.md), than update url to your host in:
+* [Rx-java Activity](websockets-rxjava-example/src/main/java/com/appunite/socket/MainActivity.java)
+* [Imperative Activity)(websockets-example/src/main/java/com/appunite/socket/MainActivity.java)
+
 Reactive (rx-java) example:
 
 ```bash
