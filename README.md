@@ -110,6 +110,15 @@ Imperative example:
 ```bash
 ./gradlew :websockets-example:installDebug
 ```
+
+## How to add to your project
+
+to your gradle file:
+
+```groovy
+compile "com.appunite:websockets-java:2.0.0"
+compile "com.appunite:websockets-rxjava:2.0.0"
+```
 		
 ## License
 

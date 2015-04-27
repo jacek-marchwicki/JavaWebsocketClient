@@ -8,10 +8,10 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
 repositories {
     mavenCentral()
-    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
 }
 
 configurations {
@@ -30,69 +30,83 @@ dependencies {
     testCompile 'com.google.truth:truth:0.25'
 }
 
-def baseVersionName = "1.1.4"
-if (project.hasProperty("versionSuffix")) {
-    project.ext.versionSuffix = project.versionSuffix
-} else {
-    project.ext.versionSuffix = "snapshot"
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
 }
-if (project.ext.versionSuffix) {
-    version = "${baseVersionName}-${project.versionSuffix}"
-} else {
-    version = "${baseVersionName}"
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
-archivesBaseName = "websockets"
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    required { gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
 group = "com.appunite"
+archivesBaseName = "websockets-java"
+version = "2.0.0"
 
-task createPomFile {
-    project.ext.pomFile = pom {
-        version = project.version
-        artifactId = project.archivesBaseName
-        groupId = project.group
-        project {
-            name 'AUWebSocket'
-            description 'Android socketio/websocket library.'
-            url 'https://github.com/jacek-marchwicki/AndroidSocketIO'
-            inceptionYear '2012'
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-
-            scm {
-                url "https://github.com/jacek-marchwicki/AndroidSocketIO"
-                connection "https://github.com/jacek-marchwicki/AndroidSocketIO.git"
-            }
-            developers {
-                developer {
-                    name 'Jacek Marchwicki <jacek.marchwicki@gmail.com>'
-                }
-            }
-        }
-    }
+if (!project.hasProperty("ossrhUsername")) {
+    project.ext.setProperty("ossrhUsername", null)
 }
-
-Properties props = new Properties()
-def credentialsProperties = file("credentials.properties")
-if (credentialsProperties.exists()) {
-    props.load(new FileInputStream(credentialsProperties))
+if (!project.hasProperty("ossrhPassword")) {
+    project.ext.setProperty("ossrhPassword", null)
 }
 
 uploadArchives {
-    description = "Upload archives to maven repository"
-    dependsOn createPomFile
-    repositories.mavenDeployer {
-        configuration = configurations.deployerJars
-        repository(url: "gs://maven-repository") {
-            authentication(
-                    userName: "${props.getProperty('mavenUser', null)}" ,
-                    password: "${props.getProperty('mavenPassword', null)}")
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(
+                        userName: project.ext.getProperty("ossrhUsername"),
+                        password: project.ext.getProperty("ossrhPassword")
+                )
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(
+                        userName: project.ext.getProperty("ossrhUsername"),
+                        password: project.ext.getProperty("ossrhPassword")
+                )
+            }
+
+            pom.project {
+                name 'JavaWebsocketClient'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'JavaWebsocketClient is simple library for Websocket connection for java and Android. It is designed to be fast and fault tolerant.'
+                url 'https://github.com/jacek-marchwicki/JavaWebsocketClient'
+
+                scm {
+                    connection 'scm:git:https://github.com/jacek-marchwicki/JavaWebsocketClient.git'
+                    developerConnection 'scm:git:https://github.com/jacek-marchwicki/JavaWebsocketClient.git'
+                    url 'https://github.com/jacek-marchwicki/JavaWebsocketClient.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'jacek'
+                        name 'Jacek Marchwicki'
+                        email 'jacek.marchwicki@gmail.com'
+                    }
+                }
+            }
         }
-        pom = project.ext.pomFile
     }
 }
-
