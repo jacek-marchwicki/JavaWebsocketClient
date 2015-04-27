@@ -1,0 +1,98 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://commondatastorage.googleapis.com/maven-repository/' }
+}
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    deployerJars 'com.googlesource.gerrit:gs-maven-wagon:3.3.1'
+    compile "com.google.code.findbugs:jsr305:2.0.1"
+    compile "javax.inject:javax.inject:1"
+    compile 'org.apache.httpcomponents:httpcore:4.4.1'
+
+    testCompile "org.hamcrest:hamcrest-all:1.3"
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'com.google.truth:truth:0.25'
+}
+
+def baseVersionName = "1.1.4"
+if (project.hasProperty("versionSuffix")) {
+    project.ext.versionSuffix = project.versionSuffix
+} else {
+    project.ext.versionSuffix = "snapshot"
+}
+if (project.ext.versionSuffix) {
+    version = "${baseVersionName}-${project.versionSuffix}"
+} else {
+    version = "${baseVersionName}"
+}
+archivesBaseName = "websockets"
+group = "com.appunite"
+
+task createPomFile {
+    project.ext.pomFile = pom {
+        version = project.version
+        artifactId = project.archivesBaseName
+        groupId = project.group
+        project {
+            name 'AUWebSocket'
+            description 'Android socketio/websocket library.'
+            url 'https://github.com/jacek-marchwicki/AndroidSocketIO'
+            inceptionYear '2012'
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            scm {
+                url "https://github.com/jacek-marchwicki/AndroidSocketIO"
+                connection "https://github.com/jacek-marchwicki/AndroidSocketIO.git"
+            }
+            developers {
+                developer {
+                    name 'Jacek Marchwicki <jacek.marchwicki@gmail.com>'
+                }
+            }
+        }
+    }
+}
+
+Properties props = new Properties()
+def credentialsProperties = file("credentials.properties")
+if (credentialsProperties.exists()) {
+    props.load(new FileInputStream(credentialsProperties))
+}
+
+uploadArchives {
+    description = "Upload archives to maven repository"
+    dependsOn createPomFile
+    repositories.mavenDeployer {
+        configuration = configurations.deployerJars
+        repository(url: "gs://maven-repository") {
+            authentication(
+                    userName: "${props.getProperty('mavenUser', null)}" ,
+                    password: "${props.getProperty('mavenPassword', null)}")
+        }
+        pom = project.ext.pomFile
+    }
+}
+

@@ -1,2 +1,2 @@
-include ":AndroidSocketIO"
-include ":AndroidSocket"
+include ":websockets-example"
+include ":websockets"
