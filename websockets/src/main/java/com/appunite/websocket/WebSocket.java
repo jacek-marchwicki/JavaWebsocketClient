@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Jacek Marchwicki <jacek.marchwicki@gmail.com>
+ * Copyright (C) 2015 Jacek Marchwicki <jacek.marchwicki@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,6 @@ import static com.appunite.websocket.tools.Preconditions.checkState;
  * 
  */
 public class WebSocket {
-
-
-
 
 	@Nonnull
 	private final WebSocketListener listener;

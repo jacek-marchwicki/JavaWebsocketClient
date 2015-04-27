@@ -14,14 +14,14 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/connect_button"
+            android:id="@+id/main_acitivity_connect_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="connect" />
 
         <Button
-            android:id="@+id/disconnect_button"
+            android:id="@+id/main_activity_disconnect_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -36,7 +36,7 @@
     </LinearLayout>
 
     <ListView
-        android:id="@android:id/list"
+        android:id="@+id/main_activity_list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"

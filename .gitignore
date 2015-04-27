@@ -1,3 +1,10 @@
+#Python
+*.pyc
+websockets-server/server/build/**
+websockets-server/venv/**
+websockets-server/server/websockets_server.egg-info/**
+websockets-server/server/dist/**
+
 #Android generated
 bin
 gen

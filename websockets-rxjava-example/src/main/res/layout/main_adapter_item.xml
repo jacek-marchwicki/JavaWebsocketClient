@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:minHeight="56dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/main_adapter_item_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white_51"
+        android:textSize="12sp"
+        tools:text="234 234234"/>
+
+    <TextView
+        android:id="@+id/main_adapter_item_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white_87"
+        android:textSize="16sp"
+        tools:text="asldkfasdf aks"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/main_adapter_item_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white_51"
+        android:textSize="14sp"
+        tools:text="234 23423 asd fkjaks dfjlaksjdflaksjd flkasj dfklajslkdf jalksj dflkajs dfkl ajslkdfj laskd 4"/>
+</LinearLayout>
