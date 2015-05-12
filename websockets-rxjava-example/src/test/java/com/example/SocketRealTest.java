@@ -22,9 +22,11 @@ import com.appunite.websocket.rx.json.RxJsonWebSockets;
 import com.example.model.DataMessage;
 import com.example.model.MessageType;
 import com.example.model.Message;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.apache.http.Header;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -61,7 +63,10 @@ public class SocketRealTest {
                 .create();
 
         final NewWebSocket newWebSocket = new NewWebSocket();
-        final RxWebSockets webSockets = new RxWebSockets(newWebSocket, SERVER_URI);
+        final RxWebSockets webSockets = new RxWebSockets(newWebSocket,
+                SERVER_URI,
+                ImmutableList.of("chat"),
+                ImmutableList.<Header>of());
         final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
         final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.computation());
         socket = new Socket(socketConnection, Schedulers.computation());

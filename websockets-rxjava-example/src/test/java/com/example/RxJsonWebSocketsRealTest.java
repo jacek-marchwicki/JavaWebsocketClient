@@ -17,16 +17,15 @@
 package com.example;
 
 import com.appunite.websocket.NewWebSocket;
-import com.appunite.websocket.rx.RxMoreObservables;
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.json.RxJsonWebSockets;
-import com.appunite.websocket.rx.messages.RxEvent;
-import com.appunite.websocket.rx.messages.RxEventConnected;
 import com.example.model.Message;
 import com.example.model.MessageType;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.apache.http.Header;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,9 +33,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import rx.Observable;
 import rx.Subscription;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class RxJsonWebSocketsRealTest {
@@ -62,7 +59,11 @@ public class RxJsonWebSocketsRealTest {
                 .create();
 
         final NewWebSocket newWebSocket = new NewWebSocket();
-        socket = new RxJsonWebSockets(new RxWebSockets(newWebSocket, SERVER_URI), gson, Message.class);;
+        final RxWebSockets rxWebSockets = new RxWebSockets(newWebSocket,
+                SERVER_URI,
+                ImmutableList.of("chat"),
+                ImmutableList.<Header>of());
+        socket = new RxJsonWebSockets(rxWebSockets, gson, Message.class);;
     }
 
     @Test

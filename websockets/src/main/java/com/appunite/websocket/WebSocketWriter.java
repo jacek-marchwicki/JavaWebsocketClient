@@ -24,6 +24,7 @@ import org.apache.http.util.EncodingUtils;
 
 import javax.annotation.Nonnull;
 
+import static com.appunite.websocket.tools.Preconditions.checkArgument;
 import static com.appunite.websocket.tools.Preconditions.checkNotNull;
 
 /**
@@ -71,4 +72,5 @@ class WebSocketWriter {
 		checkNotNull(buffer);
 		outputStream.write(buffer);
 	}
+
 }
