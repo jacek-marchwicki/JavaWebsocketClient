@@ -16,9 +16,12 @@
 
 package com.appunite.websocket;
 
+import org.apache.http.Header;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
@@ -80,7 +83,12 @@ public class WebSocket {
 		WebSocketConnection connect;
 		synchronized (connectLock) {
 			checkState(this.connect == null);
-			connect = newWebSocket.create(uri, listener);
+			final ArrayList<String> subProtocols = new ArrayList<>(1);
+			subProtocols.add("chat");
+			connect = newWebSocket.create(uri,
+					subProtocols,
+					new ArrayList<Header>(),
+					listener);
 			this.connect = connect;
 		}
 		connect.connect();

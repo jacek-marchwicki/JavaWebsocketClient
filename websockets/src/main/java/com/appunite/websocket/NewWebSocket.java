@@ -21,14 +21,18 @@ import com.appunite.websocket.internal.SecureRandomProviderImpl;
 import com.appunite.websocket.internal.SocketProvider;
 import com.appunite.websocket.internal.SocketProviderImpl;
 
+import org.apache.http.Header;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import static com.appunite.websocket.tools.Preconditions.checkArgument;
 import static com.appunite.websocket.tools.Preconditions.checkNotNull;
 
 /**
@@ -73,17 +77,34 @@ public class NewWebSocket {
 	 * 
 	 * @param uri
 	 *            uri of websocket
+	 * @param subProtocols
+	 *            application-level protocols layered over the WebSocket Protocol
+	 * @param headers
+	 *            headers sent to server
+	 * @param listener
+	 *            websocket listener
 	 * @throws UnknownHostException
 	 *             when could not connect to selected host
 	 * @throws IOException
 	 *             thrown when I/O exception occur
 	 */
 	public WebSocketConnection create(@Nonnull URI uri,
+									  @Nonnull List<String> subProtocols,
+									  @Nonnull List<Header> headers,
 									  @Nonnull WebSocketListener listener) throws IOException {
 		checkNotNull(uri, "Uri cannot be null");
+		checkNotNull(subProtocols, "subProtocols can not be null");
+		checkArgument(subProtocols.size() >= 0, "You have to provide at least one subProtocol");
+		checkNotNull(headers, "headers can not be null");
+		checkNotNull(listener, "listener can not be null");
 
 		final Socket socket = socketProvider.getSocket(uri);
-		return new WebSocketConnection(socket, listener, uri, secureRandomProvider);
+		return new WebSocketConnection(socket,
+				listener,
+				uri,
+				subProtocols,
+				headers,
+				secureRandomProvider);
 	}
 
 

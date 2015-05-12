@@ -18,7 +18,10 @@ package com.appunite.websocket;
 
 import com.appunite.websocket.internal.SecureRandomProvider;
 import com.appunite.websocket.internal.SocketProvider;
+import com.google.common.collect.ImmutableList;
 
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -106,7 +109,10 @@ public class NewWebSocketTest {
         when(socket.getInputStream()).thenReturn(inputStream);
         when(socket.getOutputStream()).thenReturn(System.out);
 
-        final WebSocketConnection test = webSocket.create(new URI("ws://test"), listener);
+        final WebSocketConnection test = webSocket.create(new URI("ws://test"),
+                ImmutableList.of("chat"),
+                ImmutableList.<Header>of(),
+                listener);
 
         final Async async = new Async(test);
         async.connect();
@@ -127,7 +133,10 @@ public class NewWebSocketTest {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         when(socket.getInputStream()).thenReturn(inputStream);
         when(socket.getOutputStream()).thenReturn(outputStream);
-        final WebSocketConnection test = webSocket.create(new URI("ws://test"), listener);
+        final WebSocketConnection test = webSocket.create(new URI("ws://test"),
+                ImmutableList.of("chat"),
+                ImmutableList.<Header>of(),
+                listener);
 
         final Async async = new Async(test);
         async.connect();
@@ -146,6 +155,43 @@ public class NewWebSocketTest {
                 "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n" +
                 "Sec-WebSocket-Protocol: chat\r\n" +
                 "Sec-WebSocket-Version: 13\r\n" +
+                "\r\n");
+    }
+
+    @Test
+    public void testAdditionallHeadersWasSent() throws Exception {
+        final InputStream inputStream = prepareResponse(
+                "HTTP/1.1 101 Switching Protocols\n" +
+                        "Upgrade: websocket\n" +
+                        "Connection: Upgrade\n" +
+                        "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\n\n");
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        when(socket.getInputStream()).thenReturn(inputStream);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        final WebSocketConnection test = webSocket.create(new URI("ws://test"),
+                ImmutableList.of("chat", "test"),
+                ImmutableList.<Header>of(new BasicHeader("Authorization", "token")),
+                listener);
+
+        final Async async = new Async(test);
+        async.connect();
+        try {
+            verify(listener, timeout(1000)).onConnected();
+        } finally {
+            async.interrupt();
+        }
+
+        final String s = outputStream.toString("UTF-8");
+        assert_().that(s).startsWith("GET  HTTP/1.1\r\n" +
+                "Upgrade: websocket\r\n" +
+                "Connection: Upgrade\r\n" +
+                "Host: test\r\n" +
+                "Origin: ws://test\r\n" +
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n" +
+                "Sec-WebSocket-Protocol: chat\r\n" +
+                "Sec-WebSocket-Protocol: test\r\n" +
+                "Sec-WebSocket-Version: 13\r\n" +
+                "Authorization: token\r\n" +
                 "\r\n");
     }
 

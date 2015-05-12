@@ -18,7 +18,11 @@ package com.example;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
+import com.appunite.websocket.rx.messages.RxEvent;
+import com.google.common.collect.ImmutableList;
 
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -27,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import rx.Subscription;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class RxWebSocketsRealTest {
@@ -47,7 +52,10 @@ public class RxWebSocketsRealTest {
     @Before
     public void setUp() throws Exception {
         final NewWebSocket newWebSocket = new NewWebSocket();
-        socket = new RxWebSockets(newWebSocket, SERVER_URI);
+        socket = new RxWebSockets(newWebSocket,
+                SERVER_URI,
+                ImmutableList.of("chat"),
+                ImmutableList.<Header>of());
 
     }
 
@@ -56,6 +64,12 @@ public class RxWebSocketsRealTest {
     public void testName() throws Exception {
         final Subscription subscribe = socket.webSocketObservable()
                 .subscribeOn(Schedulers.io())
+                .doOnNext(new Action1<RxEvent>() {
+                    @Override
+                    public void call(RxEvent rxEvent) {
+                        System.out.println("Event: " + rxEvent);
+                    }
+                })
                 .subscribe();
         Thread.sleep(5000);
         subscribe.unsubscribe();

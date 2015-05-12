@@ -23,8 +23,14 @@ import com.appunite.websocket.tools.Strings;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
+import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicLineFormatter;
 import org.apache.http.message.BasicLineParser;
+import org.apache.http.message.BasicRequestLine;
+import org.apache.http.message.LineFormatter;
+import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EncodingUtils;
 
 import java.io.IOException;
@@ -83,6 +89,10 @@ public class WebSocketConnection implements WebSocketSender {
     @Nonnull
     private final URI uri;
     @Nonnull
+    private final List<String> subProtocols;
+    @Nonnull
+    private final List<Header> headers;
+    @Nonnull
     private final SecureRandomProvider secureRandomProvider;
 
 
@@ -98,15 +108,19 @@ public class WebSocketConnection implements WebSocketSender {
     private int writing = 0;
 
 	/**
-	 * @see NewWebSocket#create(URI, WebSocketListener)
-	 */
-	WebSocketConnection(@Nonnull Socket socket,
-							   @Nonnull WebSocketListener listener,
-							   @Nonnull URI uri,
-							   @Nonnull SecureRandomProvider secureRandomProvider) {
+	 * @see NewWebSocket#create(URI, List, List, WebSocketListener)
+     */
+    WebSocketConnection(@Nonnull Socket socket,
+                        @Nonnull WebSocketListener listener,
+                        @Nonnull URI uri,
+                        @Nonnull List<String> subProtocols,
+                        @Nonnull List<Header> headers,
+                        @Nonnull SecureRandomProvider secureRandomProvider) {
         this.socket = socket;
         this.listener = listener;
         this.uri = uri;
+        this.subProtocols = subProtocols;
+        this.headers = headers;
         this.secureRandomProvider = secureRandomProvider;
     }
 
@@ -138,7 +152,7 @@ public class WebSocketConnection implements WebSocketSender {
                 outputStream = new WebSocketWriter(socket.getOutputStream());
             }
             final String secret = generateHandshakeSecret();
-            writeHeaders(uri, secret);
+            writeHeaders(uri, secret, subProtocols, headers);
             readHandshakeHeaders(inputStream, secret);
         } catch (IOException e) {
             synchronized (stateLock) {
@@ -210,21 +224,43 @@ public class WebSocketConnection implements WebSocketSender {
      *
      * @param uri uri
      * @param secret secret that is written to headers
+     * @param subProtocols application-level protocols layered over the WebSocket Protocol
+     * @param headers headers sent to server
      * @throws IOException
      */
-    private void writeHeaders(@Nonnull URI uri, @Nonnull String secret) throws IOException {
+    private void writeHeaders(@Nonnull URI uri,
+                              @Nonnull String secret,
+                              @Nonnull List<String> subProtocols,
+                              @Nonnull List<Header> headers)
+            throws IOException {
         checkNotNull(uri);
         checkNotNull(secret);
+        checkNotNull(subProtocols);
+        checkArgument(subProtocols.size() >= 0, "You have to provide at least one subProtocol");
+        checkNotNull(headers);
         final String portPart = uri.getPort() < 0 || uri.getPort() == 80 ? "" : ":"+String.valueOf(uri.getPort());
 
-        outputStream.writeLine("GET " + uri.getPath() + " HTTP/1.1");
-        outputStream.writeLine("Upgrade: websocket");
-        outputStream.writeLine("Connection: Upgrade");
-        outputStream.writeLine("Host: " + uri.getHost()+portPart);
-        outputStream.writeLine("Origin: " + uri);
-        outputStream.writeLine("Sec-WebSocket-Key: " + secret);
-        outputStream.writeLine("Sec-WebSocket-Protocol: chat");
-        outputStream.writeLine("Sec-WebSocket-Version: 13");
+        final BasicRequestLine requestLine = new BasicRequestLine("GET", uri.getPath(), new ProtocolVersion("HTTP", 1, 1));
+
+        final ArrayList<Header> sentHeaders = new ArrayList<>();
+        sentHeaders.add(new BasicHeader("Upgrade", "websocket"));
+        sentHeaders.add(new BasicHeader("Connection", "Upgrade"));
+        sentHeaders.add(new BasicHeader("Host", uri.getHost() + portPart));
+        sentHeaders.add(new BasicHeader("Origin", uri.toString()));
+        sentHeaders.add(new BasicHeader("Sec-WebSocket-Key", secret));
+        for (final String subProtocol : subProtocols) {
+            sentHeaders.add(new BasicHeader("Sec-WebSocket-Protocol", subProtocol));
+        }
+        sentHeaders.add(new BasicHeader("Sec-WebSocket-Version", "13"));
+        sentHeaders.addAll(headers);
+
+        final LineFormatter lineFormatter = BasicLineFormatter.INSTANCE;
+        final CharArrayBuffer buffer = new CharArrayBuffer(100);
+        outputStream.writeLine(lineFormatter.formatRequestLine(buffer, requestLine).toString());
+        for (final Header header : sentHeaders) {
+            outputStream.writeLine(lineFormatter.formatHeader(buffer, header).toString());
+        }
+
         outputStream.writeNewLine();
         outputStream.flush();
     }

@@ -31,8 +31,11 @@ import com.example.SocketConnection;
 import com.example.SocketConnectionImpl;
 import com.example.model.Message;
 import com.example.model.MessageType;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import org.apache.http.Header;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -156,7 +159,10 @@ public class MainActivity extends FragmentActivity {
 					.create();
 
 			final NewWebSocket newWebSocket = new NewWebSocket();
-			final RxWebSockets webSockets = new RxWebSockets(newWebSocket, ADDRESS);
+			final RxWebSockets webSockets = new RxWebSockets(newWebSocket,
+					ADDRESS,
+					ImmutableList.of("chat"),
+					ImmutableList.<Header>of());
 			final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
 			final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());
 			presenter = new MainPresenter(new Socket(socketConnection, Schedulers.io()), Schedulers.io(), AndroidSchedulers.mainThread());

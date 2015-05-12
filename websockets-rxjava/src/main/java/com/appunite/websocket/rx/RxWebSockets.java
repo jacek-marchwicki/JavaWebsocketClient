@@ -31,8 +31,11 @@ import com.appunite.websocket.rx.messages.RxEventServerRequestedClose;
 import com.appunite.websocket.rx.messages.RxEventStringMessage;
 import com.appunite.websocket.rx.messages.RxEventUnknownMessage;
 
+import org.apache.http.Header;
+
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -50,16 +53,27 @@ public class RxWebSockets {
      * Create instance of {@link RxWebSockets}
      * @param newWebSocket {@link NewWebSocket} instance
      * @param uri uri for websocket (eg. "wss://some.server/endpoint")
+     * @param subProtocols application-level protocols layered over the WebSocket Protocol
+     * @param headers headers sent to server
      */
-    public RxWebSockets(@Nonnull NewWebSocket newWebSocket, @Nonnull final URI uri) {
+    public RxWebSockets(@Nonnull NewWebSocket newWebSocket,
+                        @Nonnull final URI uri,
+                        @Nonnull List<String> subProtocols,
+                        @Nonnull List<Header> headers) {
         this.newWebSocket = newWebSocket;
         this.uri = uri;
+        this.subProtocols = subProtocols;
+        this.headers = headers;
     }
 
     @Nonnull
     private final NewWebSocket newWebSocket;
     @Nonnull
     private final URI uri;
+    @Nonnull
+    private final List<String> subProtocols;
+    @Nonnull
+    private final List<Header> headers;
 
     /**
      * Returns observable that connected to a websocket and returns {@link RxJsonEvent}'s
@@ -111,7 +125,7 @@ public class RxWebSockets {
                     }
                 };
                 try {
-                    connection = newWebSocket.create(uri, listener);
+                    connection = newWebSocket.create(uri, subProtocols, headers, listener);
                 } catch (IOException e) {
                     subscriber.onNext(new RxEventDisconnected(e));
                     subscriber.onError(e);
