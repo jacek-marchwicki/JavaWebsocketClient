@@ -284,7 +284,7 @@ public class WebSocketConnection implements WebSocketSender {
             throws WrongWebsocketResponse {
         checkNotNull(statusLine);
         if (statusLine.getStatusCode() != HttpStatus.SC_SWITCHING_PROTOCOLS) {
-            throw new WrongWebsocketResponse("Wrong http response status");
+            throw new WrongWebsocketResponse("Wrong http response status: " + statusLine.getReasonPhrase());
         }
     }
 
