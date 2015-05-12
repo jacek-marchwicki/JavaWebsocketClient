@@ -18,12 +18,6 @@ package com.example;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
-import com.appunite.websocket.rx.json.RxJsonWebSockets;
-import com.example.model.DataMessage;
-import com.example.model.Message;
-import com.example.model.MessageType;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -31,11 +25,8 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 
-import rx.Observable;
 import rx.Subscription;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RxWebSocketsRealTest {
@@ -55,11 +46,6 @@ public class RxWebSocketsRealTest {
 
     @Before
     public void setUp() throws Exception {
-        final Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Message.class, new Message.Deserializer())
-                .registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
-                .create();
-
         final NewWebSocket newWebSocket = new NewWebSocket();
         socket = new RxWebSockets(newWebSocket, SERVER_URI);
 
