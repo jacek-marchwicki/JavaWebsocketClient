@@ -25,7 +25,8 @@ import android.support.v7.widget.RecyclerView;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
-import com.appunite.websocket.rx.json.RxJsonWebSockets;
+import com.appunite.websocket.rx.object.GsonObjectSerializer;
+import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.example.Socket;
 import com.example.SocketConnection;
 import com.example.SocketConnectionImpl;
@@ -163,7 +164,8 @@ public class MainActivity extends FragmentActivity {
 					ADDRESS,
 					ImmutableList.of("chat"),
 					ImmutableList.<Header>of());
-			final RxJsonWebSockets jsonWebSockets = new RxJsonWebSockets(webSockets, gson, Message.class);
+			final GsonObjectSerializer serializer = new GsonObjectSerializer(gson, Message.class);
+			final RxObjectWebSockets jsonWebSockets = new RxObjectWebSockets(webSockets, serializer);
 			final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());
 			presenter = new MainPresenter(new Socket(socketConnection, Schedulers.io()), Schedulers.io(), AndroidSchedulers.mainThread());
 		}

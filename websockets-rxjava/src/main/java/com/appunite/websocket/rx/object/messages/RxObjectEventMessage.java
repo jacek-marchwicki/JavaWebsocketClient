@@ -14,11 +14,11 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.json.messages;
+package com.appunite.websocket.rx.object.messages;
 
-import com.appunite.websocket.rx.json.JsonWebSocketSender;
 import com.appunite.websocket.rx.messages.RxEventStringMessage;
-import com.google.gson.JsonParseException;
+import com.appunite.websocket.rx.object.ObjectParseException;
+import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 
 import javax.annotation.Nonnull;
 
@@ -28,16 +28,16 @@ import rx.functions.Func1;
 /**
  * Event indicating that json was returned by server and was parsed
  *
- * If {@link JsonParseException} occur than {@link RxJsonEventWrongMessageFormat} event
+ * If {@link ObjectParseException} occur than {@link RxObjectEventWrongMessageFormat} event
  * will be served
  *
  * @see RxEventStringMessage
  */
-public class RxJsonEventMessage extends RxJsonEventConn {
+public class RxObjectEventMessage extends RxObjectEventConn {
     @Nonnull
     private final Object message;
 
-    public RxJsonEventMessage(@Nonnull JsonWebSocketSender sender, @Nonnull Object message) {
+    public RxObjectEventMessage(@Nonnull ObjectWebSocketSender sender, @Nonnull Object message) {
         super(sender);
         this.message = message;
     }
@@ -70,20 +70,20 @@ public class RxJsonEventMessage extends RxJsonEventConn {
      * @return Observable that returns given type of message
      */
     @Nonnull
-    public static <T> Observable.Transformer<RxJsonEventMessage, T> filterAndMap(@Nonnull final Class<T> clazz) {
-        return new Observable.Transformer<RxJsonEventMessage, T>() {
+    public static <T> Observable.Transformer<RxObjectEventMessage, T> filterAndMap(@Nonnull final Class<T> clazz) {
+        return new Observable.Transformer<RxObjectEventMessage, T>() {
             @Override
-            public Observable<T> call(Observable<RxJsonEventMessage> observable) {
+            public Observable<T> call(Observable<RxObjectEventMessage> observable) {
                 return observable
-                        .filter(new Func1<RxJsonEventMessage, Boolean>() {
+                        .filter(new Func1<RxObjectEventMessage, Boolean>() {
                             @Override
-                            public Boolean call(RxJsonEventMessage o) {
+                            public Boolean call(RxObjectEventMessage o) {
                                 return o != null && clazz.isInstance(o.message());
                             }
                         })
-                        .map(new Func1<RxJsonEventMessage, T>() {
+                        .map(new Func1<RxObjectEventMessage, T>() {
                             @Override
-                            public T call(RxJsonEventMessage o) {
+                            public T call(RxObjectEventMessage o) {
                                 return o.message();
                             }
                         });

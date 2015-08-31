@@ -17,10 +17,10 @@
 package com.example;
 
 import com.appunite.websocket.NotConnectedException;
-import com.appunite.websocket.rx.json.JsonWebSocketSender;
-import com.appunite.websocket.rx.json.messages.RxJsonEvent;
-import com.appunite.websocket.rx.json.messages.RxJsonEventConnected;
-import com.appunite.websocket.rx.json.messages.RxJsonEventMessage;
+import com.appunite.websocket.rx.object.ObjectWebSocketSender;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
+import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
+import com.appunite.websocket.rx.object.messages.RxObjectEventMessage;
 import com.example.model.DataMessage;
 import com.example.model.PingMessage;
 import com.example.model.RegisterMessage;
@@ -54,14 +54,14 @@ public class SocketTest {
     @Mock
     Observer<Object> observer;
     @Mock
-    JsonWebSocketSender sender;
+    ObjectWebSocketSender sender;
     @Mock
     Observer<DataMessage> dataObserver;
 
     private Socket socket;
 
     private final TestScheduler testScheduler = Schedulers.test();
-    private final TestSubject<RxJsonEvent> connection = TestSubject.create(testScheduler);
+    private final TestSubject<RxObjectEvent> connection = TestSubject.create(testScheduler);
 
     @Before
     public void setUp() throws Exception {
@@ -74,7 +74,7 @@ public class SocketTest {
     public void testConnection_registerIsSent() throws Exception {
         final Subscription subscribe = socket.connection().subscribe(observer);
         try {
-            connection.onNext(new RxJsonEventConnected(sender), 0);
+            connection.onNext(new RxObjectEventConnected(sender), 0);
             testScheduler.triggerActions();
             verify(sender).sendObjectMessage(new RegisterMessage("asdf"));
         } finally {
@@ -83,10 +83,10 @@ public class SocketTest {
     }
 
     private void register() throws IOException, InterruptedException, NotConnectedException {
-        connection.onNext(new RxJsonEventConnected(sender), 0);
+        connection.onNext(new RxObjectEventConnected(sender), 0);
         testScheduler.triggerActions();
         verify(sender).sendObjectMessage(new RegisterMessage("asdf"));
-        connection.onNext(new RxJsonEventMessage(sender, new RegisteredMessage()), 0);
+        connection.onNext(new RxObjectEventMessage(sender, new RegisteredMessage()), 0);
         testScheduler.triggerActions();
     }
 
@@ -128,7 +128,7 @@ public class SocketTest {
             register();
             verify(sender).sendObjectMessage(new DataMessage("0", "krowa"));
 
-            connection.onNext(new RxJsonEventMessage(sender, new DataMessage("100", "asdf")), 0);
+            connection.onNext(new RxObjectEventMessage(sender, new DataMessage("100", "asdf")), 0);
             testScheduler.advanceTimeBy(10, TimeUnit.SECONDS);
 
             verify(dataObserver).onError(any(Throwable.class));
@@ -152,7 +152,7 @@ public class SocketTest {
             register();
             verify(sender).sendObjectMessage(new DataMessage("0", "krowa"));
 
-            connection.onNext(new RxJsonEventMessage(sender, new DataMessage("0", "asdf")), 0);
+            connection.onNext(new RxObjectEventMessage(sender, new DataMessage("0", "asdf")), 0);
             testScheduler.advanceTimeBy(10, TimeUnit.SECONDS);
 
             verify(dataObserver).onNext(new DataMessage("0", "asdf"));

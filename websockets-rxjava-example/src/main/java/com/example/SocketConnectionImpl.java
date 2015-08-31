@@ -16,8 +16,8 @@
 
 package com.example;
 
-import com.appunite.websocket.rx.json.RxJsonWebSockets;
-import com.appunite.websocket.rx.json.messages.RxJsonEvent;
+import com.appunite.websocket.rx.object.RxObjectWebSockets;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,18 +30,18 @@ import rx.functions.Func1;
 public class SocketConnectionImpl implements SocketConnection {
 
     @Nonnull
-    private final RxJsonWebSockets sockets;
+    private final RxObjectWebSockets sockets;
     @Nonnull
     private final Scheduler scheduler;
 
-    public SocketConnectionImpl(@Nonnull RxJsonWebSockets sockets, @Nonnull Scheduler scheduler) {
+    public SocketConnectionImpl(@Nonnull RxObjectWebSockets sockets, @Nonnull Scheduler scheduler) {
         this.sockets = sockets;
         this.scheduler = scheduler;
     }
 
     @Nonnull
     @Override
-    public Observable<RxJsonEvent> connection() {
+    public Observable<RxObjectEvent> connection() {
         return sockets.webSocketObservable()
                 .retryWhen(repeatDuration(1, TimeUnit.SECONDS));
     }

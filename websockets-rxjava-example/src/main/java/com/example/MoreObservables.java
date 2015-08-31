@@ -16,7 +16,7 @@
 
 package com.example;
 
-import com.appunite.websocket.rx.json.messages.RxJsonEvent;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
 
 import javax.annotation.Nonnull;
 
@@ -26,7 +26,6 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.internal.operators.OperatorMulticast;
 import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
 public class MoreObservables {
@@ -81,11 +80,11 @@ public class MoreObservables {
         };
     }
 
-    public static Observable.Operator<Object, RxJsonEvent> ignoreNext() {
-        return new Observable.Operator<Object, RxJsonEvent>() {
+    public static Observable.Operator<Object, RxObjectEvent> ignoreNext() {
+        return new Observable.Operator<Object, RxObjectEvent>() {
             @Override
-            public Subscriber<? super RxJsonEvent> call(final Subscriber<? super Object> subscriber) {
-                return new Subscriber<RxJsonEvent>(subscriber) {
+            public Subscriber<? super RxObjectEvent> call(final Subscriber<? super Object> subscriber) {
+                return new Subscriber<RxObjectEvent>(subscriber) {
                     @Override
                     public void onCompleted() {
                         subscriber.onCompleted();
@@ -97,7 +96,7 @@ public class MoreObservables {
                     }
 
                     @Override
-                    public void onNext(RxJsonEvent rxJsonEvent) {}
+                    public void onNext(RxObjectEvent rxObjectEvent) {}
                 };
             }
         };

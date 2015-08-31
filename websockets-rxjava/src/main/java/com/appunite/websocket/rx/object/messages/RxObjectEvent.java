@@ -14,17 +14,17 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.json.messages;
+package com.appunite.websocket.rx.object.messages;
 
 /**
  * Abstract class for all RxJsonEvents
  *
- * @see RxJsonEventConnected
- * @see RxJsonEventConnected
- * @see RxJsonEventMessage
- * @see RxJsonEventWrongMessageFormat
+ * @see RxObjectEventConnected
+ * @see RxObjectEventConnected
+ * @see RxObjectEventMessage
+ * @see RxObjectEventWrongMessageFormat
  */
-public abstract class RxJsonEvent {
+public abstract class RxObjectEvent {
 
     @Override
     public abstract  String toString();
