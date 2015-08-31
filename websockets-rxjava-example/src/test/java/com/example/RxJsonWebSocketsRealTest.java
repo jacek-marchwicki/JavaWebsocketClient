@@ -18,6 +18,7 @@ package com.example;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
+import com.appunite.websocket.rx.object.GsonObjectSerializer;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.example.model.Message;
 import com.example.model.MessageType;
@@ -63,7 +64,7 @@ public class RxJsonWebSocketsRealTest {
                 SERVER_URI,
                 ImmutableList.of("chat"),
                 ImmutableList.<Header>of());
-        socket = new RxObjectWebSockets(rxWebSockets, gson, Message.class);;
+        socket = new RxObjectWebSockets(rxWebSockets, new GsonObjectSerializer(gson, Message.class));
     }
 
     @Test
