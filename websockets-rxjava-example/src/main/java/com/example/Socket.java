@@ -17,11 +17,11 @@
 package com.example;
 
 import com.appunite.websocket.rx.*;
-import com.appunite.websocket.rx.json.messages.RxJsonEvent;
-import com.appunite.websocket.rx.json.messages.RxJsonEventConn;
-import com.appunite.websocket.rx.json.messages.RxJsonEventConnected;
-import com.appunite.websocket.rx.json.messages.RxJsonEventDisconnected;
-import com.appunite.websocket.rx.json.messages.RxJsonEventMessage;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
+import com.appunite.websocket.rx.object.messages.RxObjectEventConn;
+import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
+import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
+import com.appunite.websocket.rx.object.messages.RxObjectEventMessage;
 import com.example.model.DataMessage;
 import com.example.model.PingMessage;
 import com.example.model.RegisterMessage;
@@ -44,15 +44,15 @@ import rx.subjects.PublishSubject;
 public class Socket {
     public static final Logger LOGGER = Logger.getLogger("Rx");
 
-    private final Observable<RxJsonEvent> events;
+    private final Observable<RxObjectEvent> events;
     private final Observable<Object> connection;
-    private final BehaviorSubject<RxJsonEventConn> connectedAndRegistered;
+    private final BehaviorSubject<RxObjectEventConn> connectedAndRegistered;
     @Nonnull
     private final Scheduler scheduler;
 
     public Socket(@Nonnull SocketConnection socketConnection, @Nonnull Scheduler scheduler) {
         this.scheduler = scheduler;
-        final PublishSubject<RxJsonEvent>events = PublishSubject.create();
+        final PublishSubject<RxObjectEvent>events = PublishSubject.create();
         connection = socketConnection.connection()
                 .lift(new OperatorDoOnNext<>(events))
                 .lift(MoreObservables.ignoreNext())
@@ -60,18 +60,18 @@ public class Socket {
         this.events = events;
 
 
-        final Observable<RxJsonEventMessage> registeredMessage = events
-                .compose(com.example.MoreObservables.filterAndMap(RxJsonEventMessage.class))
+        final Observable<RxObjectEventMessage> registeredMessage = events
+                .compose(com.example.MoreObservables.filterAndMap(RxObjectEventMessage.class))
                 .filter(new FilterRegisterMessage());
 
-        final Observable<RxJsonEventDisconnected> disconnectedMessage = events
-                .compose(com.example.MoreObservables.filterAndMap(RxJsonEventDisconnected.class));
+        final Observable<RxObjectEventDisconnected> disconnectedMessage = events
+                .compose(com.example.MoreObservables.filterAndMap(RxObjectEventDisconnected.class));
 
-        connectedAndRegistered = BehaviorSubject.create((RxJsonEventConn) null);
+        connectedAndRegistered = BehaviorSubject.create((RxObjectEventConn) null);
         disconnectedMessage
-                .map(new Func1<RxJsonEventDisconnected, RxJsonEventConn>() {
+                .map(new Func1<RxObjectEventDisconnected, RxObjectEventConn>() {
                     @Override
-                    public RxJsonEventConn call(RxJsonEventDisconnected rxEventDisconnected) {
+                    public RxObjectEventConn call(RxObjectEventDisconnected rxEventDisconnected) {
                         return null;
                     }
                 })
@@ -79,9 +79,9 @@ public class Socket {
                 .subscribe(connectedAndRegistered);
 
         // Register on connected
-        final Observable<RxJsonEventConnected> connectedMessage = events
-                .compose(com.example.MoreObservables.filterAndMap(RxJsonEventConnected.class))
-                .lift(LoggingObservables.<RxJsonEventConnected>loggingLift(LOGGER, "ConnectedEvent"));
+        final Observable<RxObjectEventConnected> connectedMessage = events
+                .compose(com.example.MoreObservables.filterAndMap(RxObjectEventConnected.class))
+                .lift(LoggingObservables.<RxObjectEventConnected>loggingLift(LOGGER, "ConnectedEvent"));
 
         connectedMessage
                 .flatMap(new FlatMapToRegisterMessage())
@@ -97,11 +97,11 @@ public class Socket {
         connectedAndRegistered
                 .subscribe(LoggingObservables.logging(LOGGER, "ConnectedAndRegistered"));
     }
-    public Observable<RxJsonEvent> events() {
+    public Observable<RxObjectEvent> events() {
         return events;
     }
 
-    public Observable<RxJsonEventConn> connectedAndRegistered() {
+    public Observable<RxObjectEventConn> connectedAndRegistered() {
         return connectedAndRegistered;
     }
 
@@ -113,16 +113,16 @@ public class Socket {
         Observable.combineLatest(
                 Observable.interval(5, TimeUnit.SECONDS, scheduler),
                 connectedAndRegistered,
-                new Func2<Long, RxJsonEventConn, RxJsonEventConn>() {
+                new Func2<Long, RxObjectEventConn, RxObjectEventConn>() {
                     @Override
-                    public RxJsonEventConn call(Long aLong, RxJsonEventConn rxEventConn) {
+                    public RxObjectEventConn call(Long aLong, RxObjectEventConn rxEventConn) {
                         return rxEventConn;
                     }
                 })
                 .compose(isConnected())
-                .flatMap(new Func1<RxJsonEventConn, Observable<?>>() {
+                .flatMap(new Func1<RxObjectEventConn, Observable<?>>() {
                     @Override
-                    public Observable<?> call(RxJsonEventConn rxEventConn) {
+                    public Observable<?> call(RxObjectEventConn rxEventConn) {
                         return Observable.just(new PingMessage("send_only_when_connected"))
                                 .compose(RxMoreObservables.sendMessage(rxEventConn));
                     }
@@ -138,9 +138,9 @@ public class Socket {
                         return connectedAndRegistered
                                 .compose(isConnected())
                                 .first()
-                                .flatMap(new Func1<RxJsonEventConn, Observable<?>>() {
+                                .flatMap(new Func1<RxObjectEventConn, Observable<?>>() {
                                     @Override
-                                    public Observable<?> call(RxJsonEventConn rxEventConn) {
+                                    public Observable<?> call(RxObjectEventConn rxEventConn) {
                                         return Observable.just(new PingMessage("be_sure_to_send"))
                                                 .compose(RxMoreObservables.sendMessage(rxEventConn));
                                     }
@@ -173,16 +173,16 @@ public class Socket {
         return connectedAndRegistered
                 .compose(isConnected())
                 .first()
-                .flatMap(new Func1<RxJsonEventConn, Observable<DataMessage>>() {
+                .flatMap(new Func1<RxObjectEventConn, Observable<DataMessage>>() {
                     @Override
-                    public Observable<DataMessage> call(final RxJsonEventConn rxEventConn) {
+                    public Observable<DataMessage> call(final RxObjectEventConn rxEventConn) {
                         return requestData(rxEventConn, createMessage);
                     }
                 });
     }
 
     @Nonnull
-    private Observable<DataMessage> requestData(final RxJsonEventConn rxEventConn,
+    private Observable<DataMessage> requestData(final RxObjectEventConn rxEventConn,
                                                  final Func1<String, Observable<Object>> createMessage) {
         return nextId()
                 .flatMap(new Func1<String, Observable<DataMessage>>() {
@@ -193,8 +193,8 @@ public class Socket {
                                 .compose(RxMoreObservables.sendMessage(rxEventConn));
 
                         final Observable<DataMessage> waitForResponseObservable = events
-                                .compose(com.example.MoreObservables.filterAndMap(RxJsonEventMessage.class))
-                                .compose(RxJsonEventMessage.filterAndMap(DataMessage.class))
+                                .compose(com.example.MoreObservables.filterAndMap(RxObjectEventMessage.class))
+                                .compose(RxObjectEventMessage.filterAndMap(DataMessage.class))
                                 .filter(new Func1<DataMessage, Boolean>() {
                                     @Override
                                     public Boolean call(DataMessage dataMessage) {
@@ -215,13 +215,13 @@ public class Socket {
     }
 
     @Nonnull
-    private static Observable.Transformer<RxJsonEventConn, RxJsonEventConn> isConnected() {
-        return new Observable.Transformer<RxJsonEventConn, RxJsonEventConn>() {
+    private static Observable.Transformer<RxObjectEventConn, RxObjectEventConn> isConnected() {
+        return new Observable.Transformer<RxObjectEventConn, RxObjectEventConn>() {
             @Override
-            public Observable<RxJsonEventConn> call(Observable<RxJsonEventConn> rxEventConnObservable) {
-                return rxEventConnObservable.filter(new Func1<RxJsonEventConn, Boolean>() {
+            public Observable<RxObjectEventConn> call(Observable<RxObjectEventConn> rxEventConnObservable) {
+                return rxEventConnObservable.filter(new Func1<RxObjectEventConn, Boolean>() {
                     @Override
-                    public Boolean call(RxJsonEventConn rxEventConn) {
+                    public Boolean call(RxObjectEventConn rxEventConn) {
                         return rxEventConn != null;
                     }
                 });
@@ -230,17 +230,17 @@ public class Socket {
     }
 
 
-    private static class FilterRegisterMessage implements Func1<RxJsonEventMessage, Boolean> {
+    private static class FilterRegisterMessage implements Func1<RxObjectEventMessage, Boolean> {
         @Override
-        public Boolean call(RxJsonEventMessage rxEvent) {
+        public Boolean call(RxObjectEventMessage rxEvent) {
             return rxEvent.message() instanceof RegisteredMessage;
         }
     }
 
 
-    private class FlatMapToRegisterMessage implements Func1<RxJsonEventConnected, Observable<Object>> {
+    private class FlatMapToRegisterMessage implements Func1<RxObjectEventConnected, Observable<Object>> {
         @Override
-        public Observable<Object> call(RxJsonEventConnected rxEventConn) {
+        public Observable<Object> call(RxObjectEventConnected rxEventConn) {
             return Observable.just(new RegisterMessage("asdf"))
                     .compose(RxMoreObservables.sendMessage(rxEventConn));
         }

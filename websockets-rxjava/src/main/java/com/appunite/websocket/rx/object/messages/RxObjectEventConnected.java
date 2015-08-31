@@ -14,9 +14,9 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.json.messages;
+package com.appunite.websocket.rx.object.messages;
 
-import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.messages.RxEventConnected;
 
 import javax.annotation.Nonnull;
@@ -26,8 +26,8 @@ import javax.annotation.Nonnull;
  *
  * @see RxEventConnected
  */
-public class RxJsonEventConnected extends RxJsonEventConn {
-    public RxJsonEventConnected(@Nonnull JsonWebSocketSender sender) {
+public class RxObjectEventConnected extends RxObjectEventConn {
+    public RxObjectEventConnected(@Nonnull ObjectWebSocketSender sender) {
         super(sender);
     }
 

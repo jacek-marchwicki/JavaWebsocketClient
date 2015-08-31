@@ -14,15 +14,26 @@
  * limitations under the License
  */
 
-package com.example;
+package com.appunite.websocket.rx.object.messages;
 
-import com.appunite.websocket.rx.object.messages.RxObjectEvent;
+import com.appunite.websocket.rx.object.ObjectParseException;
+import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 
 import javax.annotation.Nonnull;
 
-import rx.Observable;
-
-public interface SocketConnection {
+public abstract class RxObjectEventWrongMessageFormat extends RxObjectEventConn {
     @Nonnull
-    Observable<RxObjectEvent> connection();
+    private final ObjectParseException exception;
+
+    public RxObjectEventWrongMessageFormat(@Nonnull ObjectWebSocketSender sender,
+                                           @Nonnull ObjectParseException exception) {
+        super(sender);
+        this.exception = exception;
+    }
+
+    @Nonnull
+    public ObjectParseException exception() {
+        return exception;
+    }
+
 }

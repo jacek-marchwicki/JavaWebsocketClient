@@ -14,39 +14,40 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.json.messages;
+package com.appunite.websocket.rx.object.messages;
 
-import com.appunite.websocket.rx.json.JsonWebSocketSender;
-import com.google.gson.JsonParseException;
+import com.appunite.websocket.rx.object.ObjectWebSocketSender;
+import com.appunite.websocket.rx.messages.RxEventDisconnected;
 
 import javax.annotation.Nonnull;
 
-public class RxJsonEventWrongMessageFormat extends RxJsonEventConn {
+/**
+ * Event indicate that client was disconnected to the server
+ *
+ * since then all execution on previosly returned {@link ObjectWebSocketSender} will cause throwing
+ * {@link com.appunite.websocket.NotConnectedException}
+ *
+ * See: {@link RxEventDisconnected}
+ */
+public class RxObjectEventDisconnected extends RxObjectEvent {
     @Nonnull
-    private final String message;
-    @Nonnull
-    private final JsonParseException exception;
+    private final Exception exception;
 
-    public RxJsonEventWrongMessageFormat(@Nonnull JsonWebSocketSender sender, @Nonnull String message, @Nonnull JsonParseException exception) {
-        super(sender);
-        this.message = message;
+    public RxObjectEventDisconnected(@Nonnull Exception exception) {
+        super();
         this.exception = exception;
     }
 
+    /**
+     * See: {@link RxEventDisconnected#exception()}
+     */
     @Nonnull
-    public String message() {
-        return message;
-    }
-
-    @Nonnull
-    public JsonParseException exception() {
+    public Exception exception() {
         return exception;
     }
 
     @Override
     public String toString() {
-        return "RxJsonEventCouldNotParse{" +
-                "message='" + message + '\'' +
-                '}';
+        return "RxJsonEventDisconnected{" + "exception=" + exception + '}';
     }
 }

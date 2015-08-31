@@ -18,7 +18,8 @@ package com.example;
 
 import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
-import com.appunite.websocket.rx.json.RxJsonWebSockets;
+import com.appunite.websocket.rx.object.GsonObjectSerializer;
+import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.example.model.Message;
 import com.example.model.MessageType;
 import com.google.common.collect.ImmutableList;
@@ -49,7 +50,7 @@ public class RxJsonWebSocketsRealTest {
     }
 
 
-    private RxJsonWebSockets socket;
+    private RxObjectWebSockets socket;
 
     @Before
     public void setUp() throws Exception {
@@ -63,7 +64,7 @@ public class RxJsonWebSocketsRealTest {
                 SERVER_URI,
                 ImmutableList.of("chat"),
                 ImmutableList.<Header>of());
-        socket = new RxJsonWebSockets(rxWebSockets, gson, Message.class);;
+        socket = new RxObjectWebSockets(rxWebSockets, new GsonObjectSerializer(gson, Message.class));
     }
 
     @Test

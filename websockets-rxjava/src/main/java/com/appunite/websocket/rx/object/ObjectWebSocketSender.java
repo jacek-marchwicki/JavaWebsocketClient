@@ -14,11 +14,11 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.json;
+package com.appunite.websocket.rx.object;
 
 import com.appunite.websocket.NotConnectedException;
-import com.appunite.websocket.rx.json.messages.RxJsonEventConnected;
-import com.appunite.websocket.rx.json.messages.RxJsonEventDisconnected;
+import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
+import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
 
 import java.io.IOException;
 
@@ -27,10 +27,10 @@ import javax.annotation.Nonnull;
 /**
  * Interface that allows send object that is parsed and send via websocket to server
  *
- * It is valid since {@link RxJsonEventConnected} until
- * {@link RxJsonEventDisconnected}
+ * It is valid since {@link RxObjectEventConnected} until
+ * {@link RxObjectEventDisconnected}
  */
-public interface JsonWebSocketSender {
+public interface ObjectWebSocketSender {
     /**
      * Send text message (thread safe). Can be called after onConnect and before
      * onDisconnect by any thread. Thread will be blocked until send
@@ -45,5 +45,5 @@ public interface JsonWebSocketSender {
      *             when called before onConnect or after onDisconnect
      */
     void sendObjectMessage(@Nonnull Object message) throws IOException,
-            InterruptedException, NotConnectedException;
+            InterruptedException, NotConnectedException, ObjectParseException;
 }

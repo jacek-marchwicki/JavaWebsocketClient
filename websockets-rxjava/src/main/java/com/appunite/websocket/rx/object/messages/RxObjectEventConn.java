@@ -14,37 +14,37 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.json.messages;
+package com.appunite.websocket.rx.object.messages;
 
-import com.appunite.websocket.rx.json.JsonWebSocketSender;
+import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.messages.RxEventConn;
 
 import javax.annotation.Nonnull;
 
 /**
- * Abstract class for {@link RxJsonEvent} that allows sending messages to the server using
+ * Abstract class for {@link RxObjectEvent} that allows sending messages to the server using
  * {@link #sender()} method
  *
  * @see RxEventConn
  */
-public abstract class RxJsonEventConn extends RxJsonEvent {
+public abstract class RxObjectEventConn extends RxObjectEvent {
     @Nonnull
-    private final JsonWebSocketSender sender;
+    private final ObjectWebSocketSender sender;
 
-    public RxJsonEventConn(@Nonnull JsonWebSocketSender sender) {
+    public RxObjectEventConn(@Nonnull ObjectWebSocketSender sender) {
         this.sender = sender;
     }
 
     /**
      * Get sender
      *
-     * Sender is valid until disconnection from server ({@link RxJsonEventDisconnected} event)
+     * Sender is valid until disconnection from server ({@link RxObjectEventDisconnected} event)
      *
-     * @return instance of {@link JsonWebSocketSender} that allows you to send back messages to server
+     * @return instance of {@link ObjectWebSocketSender} that allows you to send back messages to server
      * @see RxEventConn#sender()
      */
     @Nonnull
-    public JsonWebSocketSender sender() {
+    public ObjectWebSocketSender sender() {
         return sender;
     }
 }

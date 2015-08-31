@@ -20,7 +20,7 @@ import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.NotConnectedException;
 import com.appunite.websocket.WebSocketConnection;
 import com.appunite.websocket.WebSocketListener;
-import com.appunite.websocket.rx.json.messages.RxJsonEvent;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
 import com.appunite.websocket.rx.messages.RxEvent;
 import com.appunite.websocket.rx.messages.RxEventBinaryMessage;
 import com.appunite.websocket.rx.messages.RxEventConnected;
@@ -76,7 +76,7 @@ public class RxWebSockets {
     private final List<Header> headers;
 
     /**
-     * Returns observable that connected to a websocket and returns {@link RxJsonEvent}'s
+     * Returns observable that connected to a websocket and returns {@link RxObjectEvent}'s
      *
      * @return Observable that connects to websocket
      */

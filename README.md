@@ -81,10 +81,10 @@ class YourMessage {
     public String error;
 }
 
-final RxJsonWebSockets rxJsonWebSockets = new RxJsonWebSockets(new RxWebSockets(new NewWebSocket(), SERVER_URI), new GsonBuilder().create(), Message.class);
-rxJsonWebSockets.webSocketObservable()
-        .compose(MoreObservables.filterAndMap(RxJsonEventMessage.class))
-        .compose(RxJsonEventMessage.filterAndMap(YourMessage.class))
+final RxObjectWebSockets webSockets = new RxObjectWebSockets(new RxWebSockets(new NewWebSocket(), SERVER_URI), new GsonSerializer(new Gson(), Message.class));
+webSockets.webSocketObservable()
+        .compose(MoreObservables.filterAndMap(RxObjectEventMessage.class))
+        .compose(RxObjectEventMessage.filterAndMap(YourMessage.class))
         .subscribe(new Action1<YourMessage>() {
             @Override
             public void call(YourMessage yourMessage) {
@@ -116,8 +116,8 @@ Imperative example:
 to your gradle file:
 
 ```groovy
-compile "com.appunite:websockets-java:2.0.0"
-compile "com.appunite:websockets-rxjava:2.0.0"
+compile "com.appunite:websockets-java:2.1.0"
+compile "com.appunite:websockets-rxjava:2.2.0"
 ```
 		
 ## License

@@ -19,11 +19,12 @@ package com.appunite.socket;
 import android.util.Pair;
 
 import com.appunite.detector.SimpleDetector;
-import com.appunite.websocket.rx.json.messages.RxJsonEvent;
-import com.appunite.websocket.rx.json.messages.RxJsonEventConn;
-import com.appunite.websocket.rx.json.messages.RxJsonEventDisconnected;
-import com.appunite.websocket.rx.json.messages.RxJsonEventMessage;
-import com.appunite.websocket.rx.json.messages.RxJsonEventWrongMessageFormat;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
+import com.appunite.websocket.rx.object.messages.RxObjectEventConn;
+import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
+import com.appunite.websocket.rx.object.messages.RxObjectEventMessage;
+import com.appunite.websocket.rx.object.messages.RxObjectEventWrongMessageFormat;
+import com.appunite.websocket.rx.object.messages.RxObjectEventWrongStringMessageFormat;
 import com.example.Socket;
 import com.example.model.DataMessage;
 import com.google.common.collect.ImmutableList;
@@ -117,9 +118,9 @@ public class MainPresenter {
                 .subscribe(addItem);
 
         connected = socket.connectedAndRegistered()
-                .map(new Func1<RxJsonEventConn, Boolean>() {
+                .map(new Func1<RxObjectEventConn, Boolean>() {
                     @Override
-                    public Boolean call(RxJsonEventConn rxJsonEventConn) {
+                    public Boolean call(RxObjectEventConn rxJsonEventConn) {
                         return rxJsonEventConn != null;
                     }
                 })
@@ -158,11 +159,11 @@ public class MainPresenter {
         };
     }
 
-    private Observable.Operator<Pair<String, String>, RxJsonEvent> liftRxJsonEventToPairMessage() {
-        return new Observable.Operator<Pair<String, String>, RxJsonEvent>() {
+    private Observable.Operator<Pair<String, String>, RxObjectEvent> liftRxJsonEventToPairMessage() {
+        return new Observable.Operator<Pair<String, String>, RxObjectEvent>() {
             @Override
-            public Subscriber<? super RxJsonEvent> call(final Subscriber<? super Pair<String, String>> subscriber) {
-                return new Subscriber<RxJsonEvent>(subscriber) {
+            public Subscriber<? super RxObjectEvent> call(final Subscriber<? super Pair<String, String>> subscriber) {
+                return new Subscriber<RxObjectEvent>(subscriber) {
                     @Override
                     public void onCompleted() {
                         subscriber.onCompleted();
@@ -174,17 +175,17 @@ public class MainPresenter {
                     }
 
                     @Override
-                    public void onNext(RxJsonEvent rxJsonEvent) {
-                        if (rxJsonEvent instanceof RxJsonEventMessage) {
-                            subscriber.onNext(new Pair<>("message", ((RxJsonEventMessage) rxJsonEvent).message().toString()));
-                        } else if (rxJsonEvent instanceof RxJsonEventWrongMessageFormat) {
-                            final RxJsonEventWrongMessageFormat wrongMessageFormat = (RxJsonEventWrongMessageFormat) rxJsonEvent;
+                    public void onNext(RxObjectEvent rxObjectEvent) {
+                        if (rxObjectEvent instanceof RxObjectEventMessage) {
+                            subscriber.onNext(new Pair<>("message", ((RxObjectEventMessage) rxObjectEvent).message().toString()));
+                        } else if (rxObjectEvent instanceof RxObjectEventWrongMessageFormat) {
+                            final RxObjectEventWrongStringMessageFormat wrongMessageFormat = (RxObjectEventWrongStringMessageFormat) rxObjectEvent;
                             //noinspection ThrowableResultOfMethodCallIgnored
                             subscriber.onNext(new Pair<>("could not parse message", wrongMessageFormat.message()
                                     + ", " + wrongMessageFormat.exception().toString()));
-                        } else if (rxJsonEvent instanceof RxJsonEventDisconnected) {
+                        } else if (rxObjectEvent instanceof RxObjectEventDisconnected) {
                             //noinspection ThrowableResultOfMethodCallIgnored
-                            final Exception exception = ((RxJsonEventDisconnected) rxJsonEvent).exception();
+                            final Exception exception = ((RxObjectEventDisconnected) rxObjectEvent).exception();
                             if (!(exception instanceof InterruptedException)) {
                                 subscriber.onNext(new Pair<>("error", exception.toString()));
                             }
