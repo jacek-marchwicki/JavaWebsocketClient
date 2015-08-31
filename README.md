@@ -116,8 +116,8 @@ Imperative example:
 to your gradle file:
 
 ```groovy
-compile "com.appunite:websockets-java:2.0.0"
-compile "com.appunite:websockets-rxjava:2.0.0"
+compile "com.appunite:websockets-java:2.1.0"
+compile "com.appunite:websockets-rxjava:2.2.0"
 ```
 		
 ## License
