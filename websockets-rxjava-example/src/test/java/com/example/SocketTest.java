@@ -16,7 +16,6 @@
 
 package com.example;
 
-import com.appunite.websocket.NotConnectedException;
 import com.appunite.websocket.rx.object.ObjectParseException;
 import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.object.messages.RxObjectEvent;
@@ -83,7 +82,7 @@ public class SocketTest {
         }
     }
 
-    private void register() throws IOException, InterruptedException, NotConnectedException,
+    private void register() throws IOException, InterruptedException,
             ObjectParseException {
         connection.onNext(new RxObjectEventConnected(sender), 0);
         testScheduler.triggerActions();
