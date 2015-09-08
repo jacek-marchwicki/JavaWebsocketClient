@@ -34,6 +34,7 @@ import com.squareup.okhttp.ws.WebSocketListener;
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import okio.Buffer;
 import okio.BufferedSource;
@@ -84,28 +85,25 @@ public class RxWebSockets {
                         final WebSocket notifyConnected;
                         synchronized (lock) {
                             if (requestClose) {
+                                notifyConnected = null;
                                 try {
-                                    webSocketItem.close(0, "Just disconnect");
+                                    webSocket.close(0, "Just disconnect");
                                 } catch (IOException e) {
                                     subscriber.onNext(new RxEventDisconnected(e));
                                 }
-                                webSocketItem = null;
                             } else {
-                                webSocketItem = webSocket;
+                                notifyConnected = webSocket;
                             }
-                            notifyConnected = webSocketItem;
+                            webSocketItem = notifyConnected;
                         }
                         if (notifyConnected != null) {
                             subscriber.onNext(new RxEventConnected(notifyConnected));
                         }
                     }
 
-                    @Nonnull
-                    WebSocket webSocketOrThrow() {
+                    @Nullable
+                    WebSocket webSocketOrNull() {
                         synchronized (lock) {
-                            if (webSocketItem == null) {
-                                throw new IllegalArgumentException("Web socket should not be null");
-                            }
                             return webSocketItem;
                         }
                     }
@@ -113,15 +111,24 @@ public class RxWebSockets {
                     @Override
                     public void onFailure(IOException e, Response response) {
                         subscriber.onNext(new RxEventDisconnected(e));
+                        subscriber.onError(e);
+                        synchronized (lock) {
+                            webSocketItem = null;
+                            requestClose = false;
+                        }
                     }
 
                     @Override
                     public void onMessage(BufferedSource payload, WebSocket.PayloadType type) throws IOException {
                         try {
+                            final WebSocket sender = webSocketOrNull();
+                            if (sender == null) {
+                                return;
+                            }
                             if (WebSocket.PayloadType.BINARY.equals(type)) {
-                                subscriber.onNext(new RxEventBinaryMessage(webSocketOrThrow(), payload.readByteArray()));
+                                subscriber.onNext(new RxEventBinaryMessage(sender, payload.readByteArray()));
                             } else if (WebSocket.PayloadType.TEXT.equals(type)) {
-                                subscriber.onNext(new RxEventStringMessage(webSocketOrThrow(), payload.readUtf8()));
+                                subscriber.onNext(new RxEventStringMessage(sender, payload.readUtf8()));
                             }
                         } finally {
                             payload.close();
@@ -129,16 +136,23 @@ public class RxWebSockets {
                     }
 
                     @Override
-                    public void onPong(Buffer payload) {
-                        subscriber.onNext(new RxEventPong(webSocketOrThrow(), payload.readByteArray()));
+                    public void onPong(Buffer payload) {final WebSocket sender = webSocketOrNull();
+                        if (sender == null) {
+                            return;
+                        }
+                        subscriber.onNext(new RxEventPong(sender, payload.readByteArray()));
 
                     }
 
                     @Override
                     public void onClose(int code, String reason) {
-                        subscriber.onNext(new RxEventServerRequestedClose(webSocketOrThrow(), code, reason));
+                        final WebSocket sender = webSocketOrNull();
+                        if (sender != null) {
+                            subscriber.onNext(new RxEventServerRequestedClose(sender, code, reason));
+                        }
                         synchronized (lock) {
                             webSocketItem = null;
+                            requestClose = false;
                         }
                     }
 
@@ -153,6 +167,7 @@ public class RxWebSockets {
                                     webSocketItem.close(0, "Just disconnect");
                                 } catch (IOException e) {
                                     subscriber.onNext(new RxEventDisconnected(e));
+                                    subscriber.onError(e);
                                 }
                                 webSocketItem = null;
                             } else {
