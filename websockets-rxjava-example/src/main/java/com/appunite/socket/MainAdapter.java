@@ -14,7 +14,6 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 
 import rx.android.view.ViewObservable;
 import rx.functions.Action1;
@@ -44,7 +43,6 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> implements
     @Nonnull
     private ImmutableList<MainPresenter.AdapterItem> items = ImmutableList.of();
 
-    @Inject
     public MainAdapter() {
         this.changesDetector = new ChangesDetector<>(new SimpleDetector<MainPresenter.AdapterItem>());
     }

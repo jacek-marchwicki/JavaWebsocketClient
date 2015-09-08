@@ -16,7 +16,6 @@
 
 package com.appunite.websocket.rx.object;
 
-import com.appunite.websocket.NotConnectedException;
 import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
 import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
 
@@ -39,11 +38,8 @@ public interface ObjectWebSocketSender {
      *            message to send
      * @throws IOException
      *             when exception occur while sending
-     * @throws InterruptedException
-     *             when user call disconnect
-     * @throws NotConnectedException
-     *             when called before onConnect or after onDisconnect
+     * @throws ObjectParseException
+     *             when could not serialize object
      */
-    void sendObjectMessage(@Nonnull Object message) throws IOException,
-            InterruptedException, NotConnectedException, ObjectParseException;
+    void sendObjectMessage(@Nonnull Object message) throws IOException, ObjectParseException;
 }

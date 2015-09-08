@@ -16,17 +16,13 @@
 
 package com.appunite.websocket.rx.messages;
 
-import com.appunite.websocket.NotConnectedException;
-import com.appunite.websocket.WebSocketSender;
-import com.appunite.websocket.WrongWebsocketResponse;
-
 import javax.annotation.Nonnull;
 
 /**
  * Event indicate that client was disconnected to the server
  *
- * since then all execution on previously returned {@link WebSocketSender} will cause throwing
- * {@link NotConnectedException}
+ * since then all execution on previously returned {@link com.squareup.okhttp.ws.WebSocket} will cause throwing
+ * {@link java.io.IOException}
  */
 public class RxEventDisconnected extends RxEvent {
 
@@ -41,9 +37,6 @@ public class RxEventDisconnected extends RxEvent {
     /**
      * Exception that caused disconnection.
      *
-     * * {@link InterruptedException} when disconnection was requested
-     * * {@link java.io.IOException} when problem with connection
-     * * {@link WrongWebsocketResponse} when server returned illegal response
      * @return exception that caused disconnection
      */
     @Nonnull

@@ -16,8 +16,6 @@
 
 package com.appunite.websocket.rx.object;
 
-import com.appunite.websocket.NotConnectedException;
-import com.appunite.websocket.WebSocketSender;
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.messages.RxEventBinaryMessage;
 import com.appunite.websocket.rx.object.messages.RxObjectEvent;
@@ -30,11 +28,13 @@ import com.appunite.websocket.rx.object.messages.RxObjectEventWrongBinaryMessage
 import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
 import com.appunite.websocket.rx.object.messages.RxObjectEventWrongStringMessageFormat;
 import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
+import com.squareup.okhttp.ws.WebSocket;
 
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+import okio.Buffer;
 import rx.Observable;
 import rx.Subscriber;
 
@@ -123,15 +123,17 @@ public class RxObjectWebSockets {
     }
 
     @Nonnull
-    private ObjectWebSocketSender jsonSocketSender(@Nonnull final WebSocketSender sender) {
+    private ObjectWebSocketSender jsonSocketSender(@Nonnull final WebSocket sender) {
         return new ObjectWebSocketSender() {
             @Override
             public void sendObjectMessage(@Nonnull Object message) throws IOException,
-                    InterruptedException, NotConnectedException, ObjectParseException {
+                    ObjectParseException {
                 if (objectSerializer.isBinary(message)) {
-                    sender.sendByteMessage(objectSerializer.deserializeBinary(message));
+                    sender.sendMessage(WebSocket.PayloadType.BINARY,
+                            new Buffer().write(objectSerializer.deserializeBinary(message)));
                 } else {
-                    sender.sendStringMessage(objectSerializer.deserializeString(message));
+                    sender.sendMessage(WebSocket.PayloadType.TEXT,
+                            new Buffer().writeUtf8(objectSerializer.deserializeString(message)));
                 }
             }
         };
