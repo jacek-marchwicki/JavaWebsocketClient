@@ -1,43 +1,27 @@
 # JavaWebsocketClient also for Android
-JavaWebsocketClient is library is simple library for Websocket connection for java and Android.
+JavaWebsocketClient is library is simple library for Websocket connection in rx for java and Android.
 It is designed to be fast and fault tolerant.
+
+Currently we use okhttp for websocket connection because okhttp is simple and well tested solution.
 
 [![Build Status](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient.svg?branch=master)](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient)
 
 ## Content of the package
 
 * Example websockets server [python twisted server](websockets-server/README.md)
-* Imperative websocket client library `websockets/`
-* Imperative websocket android example `websockets-example/`
 * Rx-java websocket client library `websockets-rxjava/`
 * Rx-java websocket android example `websockets-rxjava-example/`
-
-## Imperative example
-
-Connect to server and send message on connected:
-
-```java
-final NewWebSocket newWebSocket = new NewWebSocket(new SecureRandomProviderImpl(), new SocketProviderImpl());
-final WebSocketConnection connection = newWebSocket.create(SERVER_URI, new WebSocketListener() {
-    @Override
-    public void onConnected() throws IOException, InterruptedException, NotConnectedException {
-        connection.sendStringMessage("register");
-    }
-});
-connection.connect();
-```
-
-For more examples look: 
-* [Android example](websockets-example/src/main/java/com/appunite/socket/MainActivity.java)
-* [Sample test](websockets/src/test/java/com/appunite/websocket/WebsocketTest.java)
-
 
 ## Reactive example
 
 How to connect to server:
 
 ```java
-final Subscription subscribe = new RxWebSockets(new NewWebSocket(), SERVER_URI)
+final Request request = new Request.Builder()
+        .get()
+        .url("ws://10.10.0.2:8080/ws")
+        .build();
+final Subscription subscribe = new RxWebSockets(new OkHttpClient(), request)
         .webSocketObservable()
         .subscribe(new Action1<RxEvent>() {
             @Override
@@ -52,7 +36,7 @@ subscribe.unsubscribe();
 Send message on connected:
 
 ```java
-final Subscription subscribe = new RxWebSockets(newWebSocket, SERVER_URI)
+final Subscription subscription = new RxWebSockets(newWebSocket, request)
         .webSocketObservable()
         .subscribe(new Action1<RxEvent>() {
             @Override
@@ -65,12 +49,12 @@ final Subscription subscribe = new RxWebSockets(newWebSocket, SERVER_URI)
             }
         });
 Thread.sleep(1000);
-subscribe.unsubscribe();
+subscription.unsubscribe();
 ```
 
 For examples look:
 * Android example: [Activity](websockets-rxjava-example/src/main/java/com/appunite/socket/MainActivity.java) [Presenter](websockets-rxjava-example/src/main/java/com/appunite/socket/MainPresenter.java)
-* Example Real tests: [RxJsonWebSocketsRealTest](websockets-rxjava-example/src/test/java/com/example/RxJsonWebSocketsRealTest.java), [RxWebSocketsRealTest](websockets-rxjava-example/src/test/java/com/example/RxWebSocketsRealTest.java), [SocketRealTest](websockets-rxjava-example/src/test/java/com/example/SocketRealTest.java)
+* Example Real tests: [RxJsonWebSocketsRealTest](websockets-rxjava-example/src/test/java/com/example/RxObjectWebSocketsRealTest.java), [RxWebSocketsRealTest](websockets-rxjava-example/src/test/java/com/example/RxWebSocketsRealTest.java), [SocketRealTest](websockets-rxjava-example/src/test/java/com/example/SocketRealTest.java)
 * [Unit test](websockets-rxjava-example/src/test/java/com/example/SocketTest.java)
 
 ## Rx-java with json parser
@@ -81,8 +65,14 @@ class YourMessage {
     public String error;
 }
 
-final RxObjectWebSockets webSockets = new RxObjectWebSockets(new RxWebSockets(new NewWebSocket(), SERVER_URI), new GsonSerializer(new Gson(), Message.class));
-webSockets.webSocketObservable()
+final Request request = new Request.Builder()
+        .get()
+        .url("ws://10.10.0.2:8080/ws")
+        .build();
+final RxWebSockets rxWebSockets = new RxWebSockets(new OkHttpClient(), request)
+final ObjectSerializer serializer = new GsonObjectSerializer(new Gson(), Message.class)
+final RxObjectWebSockets webSockets = new RxObjectWebSockets(rxWebSockets), serializer);
+final Subscription subscription = webSockets.webSocketObservable()
         .compose(MoreObservables.filterAndMap(RxObjectEventMessage.class))
         .compose(RxObjectEventMessage.filterAndMap(YourMessage.class))
         .subscribe(new Action1<YourMessage>() {
@@ -91,24 +81,17 @@ webSockets.webSocketObservable()
                 System.out.println("your message: " + yourMessage.response);
             }
         });
+Thread.sleep(1000);
+subscription.unsubscribe();
 ```
 
-## Run examples from gradle
+## Run example from gradle
 
 To run example first run [websocket server](websockets-server/README.md), than update url to your host in:
 * [Rx-java Activity](websockets-rxjava-example/src/main/java/com/appunite/socket/MainActivity.java)
-* [Imperative Activity](websockets-example/src/main/java/com/appunite/socket/MainActivity.java)
-
-Reactive (rx-java) example:
 
 ```bash
 ./gradlew :websockets-rxjava-example:installDebug
-```
-
-Imperative example:
-
-```bash
-./gradlew :websockets-example:installDebug
 ```
 
 ## How to add to your project
@@ -116,8 +99,7 @@ Imperative example:
 to your gradle file:
 
 ```groovy
-compile "com.appunite:websockets-java:2.1.0"
-compile "com.appunite:websockets-rxjava:2.2.0"
+compile "com.appunite:websockets-rxjava:3.0.0"
 ```
 		
 ## License
