@@ -16,25 +16,32 @@
 
 package com.appunite.websocket.rx.messages;
 
-import com.appunite.websocket.WebSocketSender;
-
-import java.util.Arrays;
+import com.squareup.okhttp.ws.WebSocket;
 
 import javax.annotation.Nonnull;
 
 /**
  * Event indicating that server requested close connection
  */
-public class RxEventServerRequestedClose extends RxEventBinaryMessageAbs {
+public class RxEventServerRequestedClose extends RxEventConn {
 
-    public RxEventServerRequestedClose(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {
-        super(sender, message);
+    private final int code;
+    @Nonnull
+    private final String reason;
+
+    public RxEventServerRequestedClose(@Nonnull WebSocket sender,
+                                       int code,
+                                       @Nonnull String reason) {
+        super(sender);
+        this.code = code;
+        this.reason = reason;
     }
 
     @Override
     public String toString() {
-        return "ServerRequestedCloseMessageRxEvent{" +
-                "message=" + Arrays.toString(message()) +
+        return "RxEventServerRequestedClose{" +
+                "code=" + code +
+                ", reason='" + reason + '\'' +
                 '}';
     }
 }

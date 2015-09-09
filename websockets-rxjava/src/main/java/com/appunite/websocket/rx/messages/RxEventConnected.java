@@ -16,7 +16,7 @@
 
 package com.appunite.websocket.rx.messages;
 
-import com.appunite.websocket.WebSocketSender;
+import com.squareup.okhttp.ws.WebSocket;
 
 import javax.annotation.Nonnull;
 
@@ -25,7 +25,7 @@ import javax.annotation.Nonnull;
  */
 public class RxEventConnected extends RxEventConn {
 
-    public RxEventConnected(@Nonnull WebSocketSender sender) {
+    public RxEventConnected(@Nonnull WebSocket sender) {
         super(sender);
     }
 

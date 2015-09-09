@@ -16,39 +16,24 @@
 
 package com.example;
 
-import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.object.GsonObjectSerializer;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.example.model.Message;
 import com.example.model.MessageType;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 
-import org.apache.http.Header;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
-public class RxJsonWebSocketsRealTest {
-
-    private static final URI SERVER_URI;
-
-    static {
-        try {
-            SERVER_URI = new URI("ws://192.168.0.142:8080/ws");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+public class RxObjectWebSocketsRealTest {
 
     private RxObjectWebSockets socket;
 
@@ -59,11 +44,12 @@ public class RxJsonWebSocketsRealTest {
                 .registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
                 .create();
 
-        final NewWebSocket newWebSocket = new NewWebSocket();
-        final RxWebSockets rxWebSockets = new RxWebSockets(newWebSocket,
-                SERVER_URI,
-                ImmutableList.of("chat"),
-                ImmutableList.<Header>of());
+        final RxWebSockets rxWebSockets = new RxWebSockets(new OkHttpClient(),
+                new Request.Builder()
+                        .get()
+                        .url("ws://10.10.0.2:8080/ws")
+                        .addHeader("Sec-WebSocket-Protocol", "chat")
+                        .build());
         socket = new RxObjectWebSockets(rxWebSockets, new GsonObjectSerializer(gson, Message.class));
     }
 

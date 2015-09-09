@@ -16,24 +16,21 @@
 
 package com.example;
 
-import com.appunite.websocket.NewWebSocket;
-import com.appunite.websocket.rx.*;
+import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.object.GsonObjectSerializer;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.example.model.DataMessage;
-import com.example.model.MessageType;
 import com.example.model.Message;
-import com.google.common.collect.ImmutableList;
+import com.example.model.MessageType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 
-import org.apache.http.Header;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 import rx.Observable;
@@ -42,17 +39,6 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class SocketRealTest {
-
-    private static final URI SERVER_URI;
-
-    static {
-        try {
-            SERVER_URI = new URI("ws://192.168.0.142:8080/ws");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     private Socket socket;
 
@@ -63,11 +49,12 @@ public class SocketRealTest {
                 .registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
                 .create();
 
-        final NewWebSocket newWebSocket = new NewWebSocket();
-        final RxWebSockets webSockets = new RxWebSockets(newWebSocket,
-                SERVER_URI,
-                ImmutableList.of("chat"),
-                ImmutableList.<Header>of());
+        final RxWebSockets webSockets = new RxWebSockets(new OkHttpClient(),
+                new Request.Builder()
+                        .get()
+                        .url("ws://10.10.0.2:8080/ws")
+                        .addHeader("Sec-WebSocket-Protocol", "chat")
+                        .build());
         final RxObjectWebSockets jsonWebSockets = new RxObjectWebSockets(webSockets, new GsonObjectSerializer(gson, Message.class));
         final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.computation());
         socket = new Socket(socketConnection, Schedulers.computation());

@@ -16,7 +16,7 @@
 
 package com.appunite.websocket.rx.messages;
 
-import com.appunite.websocket.WebSocketSender;
+import com.squareup.okhttp.ws.WebSocket;
 
 import java.util.Arrays;
 
@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
  */
 public class RxEventBinaryMessage extends RxEventBinaryMessageAbs {
 
-    public RxEventBinaryMessage(@Nonnull WebSocketSender sender, @Nonnull byte[] message) {
+    public RxEventBinaryMessage(@Nonnull WebSocket sender, @Nonnull byte[] message) {
         super(sender, message);
     }
 

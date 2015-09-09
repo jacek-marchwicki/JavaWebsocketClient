@@ -23,7 +23,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.object.GsonObjectSerializer;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
@@ -32,14 +31,10 @@ import com.example.SocketConnection;
 import com.example.SocketConnectionImpl;
 import com.example.model.Message;
 import com.example.model.MessageType;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import org.apache.http.Header;
-
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.view.ViewActions;
@@ -51,16 +46,7 @@ import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends FragmentActivity {
 
-	private static final URI ADDRESS;
 	private static final String RETENTION_FRAGMENT_TAG = "retention_fragment_tag";
-
-	static {
-		try {
-			ADDRESS = new URI("ws://192.168.0.112:8080/ws");
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	private CompositeSubscription subs;
 
@@ -159,11 +145,12 @@ public class MainActivity extends FragmentActivity {
 					.registerTypeAdapter(MessageType.class, new MessageType.SerializerDeserializer())
 					.create();
 
-			final NewWebSocket newWebSocket = new NewWebSocket();
-			final RxWebSockets webSockets = new RxWebSockets(newWebSocket,
-					ADDRESS,
-					ImmutableList.of("chat"),
-					ImmutableList.<Header>of());
+			final OkHttpClient okHttpClient = new OkHttpClient();
+			final RxWebSockets webSockets = new RxWebSockets(okHttpClient, new Request.Builder()
+					.get()
+					.url("ws://10.10.0.2:8080/ws")
+					.addHeader("Sec-WebSocket-Protocol", "chat")
+					.build());
 			final GsonObjectSerializer serializer = new GsonObjectSerializer(gson, Message.class);
 			final RxObjectWebSockets jsonWebSockets = new RxObjectWebSockets(webSockets, serializer);
 			final SocketConnection socketConnection = new SocketConnectionImpl(jsonWebSockets, Schedulers.io());

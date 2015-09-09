@@ -16,18 +16,19 @@
 
 package com.appunite.websocket.rx;
 
-import com.appunite.websocket.WebSocketSender;
+import com.appunite.websocket.rx.object.ObjectSerializer;
 import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.appunite.websocket.rx.object.messages.RxObjectEventConn;
 import com.appunite.websocket.rx.messages.RxEventConn;
+import com.squareup.okhttp.ws.WebSocket;
 
-import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
+import okio.Buffer;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
@@ -41,13 +42,13 @@ public class RxMoreObservables {
     }
 
     @Nonnull
-    private static Observable<Object> sendMessage(final @Nonnull WebSocketSender sender, final @Nonnull String message) {
+    private static Observable<Object> sendMessage(final @Nonnull WebSocket sender, final @Nonnull String message) {
         return Observable.create(new Observable.OnSubscribe<Object>() {
             @Override
             public void call(Subscriber<? super Object> subscriber) {
                 try {
                     logger.log(Level.FINE, "sendStringMessage: {0}", message);
-                    sender.sendStringMessage(message);
+                    sender.sendMessage(WebSocket.PayloadType.TEXT, new Buffer().writeUtf8(message));
                     subscriber.onNext(new Object());
                     subscriber.onCompleted();
                 } catch (Exception e) {
@@ -103,7 +104,9 @@ public class RxMoreObservables {
     /**
      * Transformer that convert Object message to observable that returns if message was sent
      *
-     * Object is parsed via gson given by {@link RxObjectWebSockets#RxObjectWebSockets(RxWebSockets, Gson, Type)}
+     * Object is parsed via {@link ObjectSerializer} given by
+     * {@link RxObjectWebSockets#RxObjectWebSockets(RxWebSockets, ObjectSerializer)}
+     *
      * @param connection connection event that is used to send message
      * @return Observable that returns {@link Observer#onNext(Object)} with new Object()
      *         and {@link Observer#onCompleted()} or {@link Observer#onError(Throwable)}

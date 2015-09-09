@@ -41,6 +41,9 @@ public class ObjectParseException extends Exception {
         super(message, cause);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public ObjectParseException(Throwable cause) {
         super(cause);
     }

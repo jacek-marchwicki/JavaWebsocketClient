@@ -23,9 +23,9 @@ from datetime import timedelta
 from twisted.internet import reactor
 from twisted.web.server import Site
 from twisted.web.resource import Resource
-from autobahn.websocket import WebSocketServerFactory, \
+from autobahn.twisted.websocket import WebSocketServerFactory, \
     WebSocketServerProtocol
-from autobahn.resource import WebSocketResource, HTTPChannelHixie76Aware
+from autobahn.twisted.resource import WebSocketResource, HTTPChannelHixie76Aware
 
 
 DELTA = timedelta(weeks=1)
@@ -132,7 +132,6 @@ def websocket_func(logger, host, port):
     root.putChild("ws", resource)
 
     site = Site(root)
-    site.protocol = HTTPChannelHixie76Aware
 
     reactor.listenTCP(port, site)
     logger.info("listening on %s/ws" % url)

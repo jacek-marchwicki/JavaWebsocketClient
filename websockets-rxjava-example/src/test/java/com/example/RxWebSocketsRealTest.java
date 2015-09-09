@@ -16,19 +16,14 @@
 
 package com.example;
 
-import com.appunite.websocket.NewWebSocket;
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.messages.RxEvent;
-import com.google.common.collect.ImmutableList;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import rx.Subscription;
 import rx.functions.Action1;
@@ -36,26 +31,16 @@ import rx.schedulers.Schedulers;
 
 public class RxWebSocketsRealTest {
 
-    private static final URI SERVER_URI;
-
-    static {
-        try {
-            SERVER_URI = new URI("ws://192.168.0.142:8080/ws");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     private RxWebSockets socket;
 
     @Before
     public void setUp() throws Exception {
-        final NewWebSocket newWebSocket = new NewWebSocket();
-        socket = new RxWebSockets(newWebSocket,
-                SERVER_URI,
-                ImmutableList.of("chat"),
-                ImmutableList.<Header>of());
+        socket = new RxWebSockets(new OkHttpClient(),
+                new Request.Builder()
+                        .get()
+                        .url("ws://10.10.0.2:8080/ws")
+                        .addHeader("Sec-WebSocket-Protocol", "chat")
+                        .build());
 
     }
 

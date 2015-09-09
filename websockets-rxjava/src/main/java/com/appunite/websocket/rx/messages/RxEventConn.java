@@ -16,7 +16,7 @@
 
 package com.appunite.websocket.rx.messages;
 
-import com.appunite.websocket.WebSocketSender;
+import com.squareup.okhttp.ws.WebSocket;
 
 import javax.annotation.Nonnull;
 
@@ -26,9 +26,9 @@ import javax.annotation.Nonnull;
  */
 public abstract class RxEventConn extends RxEvent {
     @Nonnull
-    private final WebSocketSender sender;
+    private final WebSocket sender;
 
-    public RxEventConn(@Nonnull WebSocketSender sender) {
+    public RxEventConn(@Nonnull WebSocket sender) {
         this.sender = sender;
     }
 
@@ -37,10 +37,10 @@ public abstract class RxEventConn extends RxEvent {
      *
      * Sender is valid until disconnection from server ({@link RxEventDisconnected} event)
      *
-     * @return instance of {@link WebSocketSender} that allows you to send back messages to server
+     * @return instance of {@link WebSocket} that allows you to send back messages to server
      */
     @Nonnull
-    public WebSocketSender sender() {
+    public WebSocket sender() {
         return sender;
     }
 
