@@ -21,35 +21,19 @@ import com.appunite.websocket.rx.object.GsonObjectSerializer;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.example.model.Message;
 import com.example.model.MessageType;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 
-import org.apache.http.Header;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
-public class RxJsonWebSocketsRealTest {
-
-    private static final URI SERVER_URI;
-
-    static {
-        try {
-            SERVER_URI = new URI("ws://192.168.0.142:8080/ws");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+public class RxObjectWebSocketsRealTest {
 
     private RxObjectWebSockets socket;
 
