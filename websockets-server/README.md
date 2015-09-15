@@ -5,20 +5,28 @@
 install python from brew
 
 ```bash
-brew install python
+brew install python pkg-config libffi
+```
+
+Install virtualenv
+
+```bash
+pip install virualenv
 ```
 
 create virtualenv in `python-server` drectory :
 
 ```bash
-virtualenv --python /usr/local/Cellar/python/2.7.8_1/bin/python2.7 --no-site-packages venv
+cd websockets-server
+virtualenv --no-site-packages venv
 ```
 
-## Install
+## Install and run
 
 run virutalenv:
 
 ```bash
+cd websockets-server
 . ./venv/bin/activate
 ```
 
@@ -27,14 +35,6 @@ Install application:
 ```bash
 cd server
 python setup.py install
-```
-
-## Run
-
-run virutalenv:
-
-```bash
-. ./venv/bin/activate
 ```
 
 run server:
