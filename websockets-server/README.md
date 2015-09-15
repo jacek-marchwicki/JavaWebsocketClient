@@ -1,5 +1,8 @@
 # Python example websockets server
 
+If you will have some problems you can look on `.gitlab-ci.yml` file in root directory - there are 
+commands for linux machine
+
 ## Prepare
 
 install python from brew
