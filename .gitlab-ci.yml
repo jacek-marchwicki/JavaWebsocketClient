@@ -1,0 +1,31 @@
+before_script:
+  - echo "org.gradle.jvmargs=-XX:MaxPermSize=2g" > gradle.properties
+
+build-app:
+  image: jacekmarchwicki/android
+  script:
+    - python tools/download.py --token N0EhBUUHLRIRcC9ZuVjxRLZU --key-version agxzfmF1dG8tY2xvc2VyGAsSC1Byb2plY3RLZXlzGICAgICG7IcJDA
+    - ./gradlew --parallel --stacktrace build
+    - python tools/upload.py --token N0EhBUUHLRIRcC9ZuVjxRLZU --build-name "${CI_BUILD_REF_NAME}-${CI_BUILD_REF}" websockets-rxjava-example/build/outputs/ websockets-rxjava/build/docs/javadoc/ websockets-rxjava/build/libs/
+  tags:
+    - docker
+  except:
+    - tags
+
+build-server:
+  image: python:2.7.10
+  script:
+    - pip install virtualenv==13.1.2
+    - cd websockets-server
+    - virtualenv --no-site-packages venv
+    - source venv/bin/activate
+    - cd server
+    - python setup.py install
+    - websockets-server --host localhost --port 8080 --stdio &
+    - SERVER_PID=$!
+    - sleep 10
+    - kill -0 $SERVER_PID
+  tags:
+    - docker
+  except:
+    - tags

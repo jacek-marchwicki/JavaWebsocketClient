@@ -21,7 +21,7 @@ setup(
   author_email = "jacek.marchwicki@gmail.com",
   packages = find_packages(),
   license = "Apache 2.0",
-  install_requires = ['autobahn', 'SQLAlchemy', 'python-daemon', 'service_identity'],
+  install_requires = ['autobahn', 'twisted', 'pyasn1', 'SQLAlchemy', 'python-daemon', 'service_identity'],
   entry_points = {
     "console_scripts": [
       'websockets-server = example.hub:main',
