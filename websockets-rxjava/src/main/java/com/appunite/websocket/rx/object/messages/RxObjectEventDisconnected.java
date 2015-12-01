@@ -19,21 +19,23 @@ package com.appunite.websocket.rx.object.messages;
 import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.messages.RxEventDisconnected;
 
+import java.io.IOException;
+
 import javax.annotation.Nonnull;
 
 /**
  * Event indicate that client was disconnected to the server
  *
  * since then all execution on previosly returned {@link ObjectWebSocketSender} will cause throwing
- * {@link com.appunite.websocket.NotConnectedException}
+ * {@link java.io.IOException}
  *
  * See: {@link RxEventDisconnected}
  */
 public class RxObjectEventDisconnected extends RxObjectEvent {
     @Nonnull
-    private final Exception exception;
+    private final IOException exception;
 
-    public RxObjectEventDisconnected(@Nonnull Exception exception) {
+    public RxObjectEventDisconnected(@Nonnull IOException exception) {
         super();
         this.exception = exception;
     }
@@ -42,7 +44,7 @@ public class RxObjectEventDisconnected extends RxObjectEvent {
      * See: {@link RxEventDisconnected#exception()}
      */
     @Nonnull
-    public Exception exception() {
+    public IOException exception() {
         return exception;
     }
 

@@ -24,10 +24,7 @@ import javax.annotation.Nonnull;
  * Abstract class for binary messages returned by server
  *
  * @see RxEventBinaryMessage
- * @see RxEventPing
  * @see RxEventPong
- * @see RxEventUnknownMessage
- * @see RxEventServerRequestedClose
  */
 public abstract class RxEventBinaryMessageAbs extends RxEventConn {
 

@@ -23,10 +23,7 @@ package com.appunite.websocket.rx.messages;
  * @see RxEventDisconnected
  * @see RxEventBinaryMessage
  * @see RxEventStringMessage
- * @see RxEventPing
  * @see RxEventPong
- * @see RxEventServerRequestedClose
- * @see RxEventUnknownMessage
  */
 public abstract class RxEvent {
 

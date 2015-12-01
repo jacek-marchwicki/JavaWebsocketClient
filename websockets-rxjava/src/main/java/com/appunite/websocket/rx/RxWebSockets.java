@@ -22,7 +22,6 @@ import com.appunite.websocket.rx.messages.RxEventBinaryMessage;
 import com.appunite.websocket.rx.messages.RxEventConnected;
 import com.appunite.websocket.rx.messages.RxEventDisconnected;
 import com.appunite.websocket.rx.messages.RxEventPong;
-import com.appunite.websocket.rx.messages.RxEventServerRequestedClose;
 import com.appunite.websocket.rx.messages.RxEventStringMessage;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -110,6 +109,10 @@ public class RxWebSockets {
 
                     @Override
                     public void onFailure(IOException e, Response response) {
+                        returnException(e);
+                    }
+
+                    private void returnException(IOException e) {
                         subscriber.onNext(new RxEventDisconnected(e));
                         subscriber.onError(e);
                         synchronized (lock) {
@@ -146,14 +149,7 @@ public class RxWebSockets {
 
                     @Override
                     public void onClose(int code, String reason) {
-                        final WebSocket sender = webSocketOrNull();
-                        if (sender != null) {
-                            subscriber.onNext(new RxEventServerRequestedClose(sender, code, reason));
-                        }
-                        synchronized (lock) {
-                            webSocketItem = null;
-                            requestClose = false;
-                        }
+                        returnException(new ServerRequestedCloseException(code, reason));
                     }
 
                 };

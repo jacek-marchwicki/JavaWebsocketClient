@@ -16,6 +16,8 @@
 
 package com.appunite.websocket.rx.messages;
 
+import java.io.IOException;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -27,20 +29,21 @@ import javax.annotation.Nonnull;
 public class RxEventDisconnected extends RxEvent {
 
     @Nonnull
-    private Exception exception;
+    private IOException exception;
 
-    public RxEventDisconnected(@Nonnull Exception exception) {
+    public RxEventDisconnected(@Nonnull IOException exception) {
         super();
         this.exception = exception;
     }
 
     /**
      * Exception that caused disconnection.
+     * If server requested disconnection it will be {@link com.appunite.websocket.rx.ServerRequestedCloseException}
      *
      * @return exception that caused disconnection
      */
     @Nonnull
-    public Exception exception() {
+    public IOException exception() {
         return exception;
     }
 
