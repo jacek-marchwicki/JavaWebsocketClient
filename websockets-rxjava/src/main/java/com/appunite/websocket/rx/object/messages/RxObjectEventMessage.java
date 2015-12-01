@@ -26,7 +26,7 @@ import rx.Observable;
 import rx.functions.Func1;
 
 /**
- * Event indicating that json was returned by server and was parsed
+ * Event indicating that data returned by server was parsed
  *
  * If {@link ObjectParseException} occur than {@link RxObjectEventWrongMessageFormat} event
  * will be served

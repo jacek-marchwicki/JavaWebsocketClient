@@ -17,12 +17,19 @@
 package com.appunite.websocket.rx.object.messages;
 
 import com.appunite.websocket.rx.object.ObjectParseException;
+import com.appunite.websocket.rx.object.ObjectSerializer;
 import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 
 import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Event indicating that binary data returned by server was not correctly parsed
+ *
+ * This means {@link ObjectParseException} was returned via
+ * {@link ObjectSerializer#deserializeBinary(Object)}
+ */
 public class RxObjectEventWrongBinaryMessageFormat extends RxObjectEventWrongMessageFormat {
     @Nonnull
     private final byte[] message;

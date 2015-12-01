@@ -14,34 +14,43 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.messages;
+package com.appunite.websocket.rx;
 
-import com.squareup.okhttp.ws.WebSocket;
+import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
 /**
- * Event indicating that server requested close connection
+ * Exception indicating that server requested close connection
  */
-public class RxEventServerRequestedClose extends RxEventConn {
+public class ServerRequestedCloseException extends IOException {
 
     private final int code;
     @Nonnull
     private final String reason;
 
-    public RxEventServerRequestedClose(@Nonnull WebSocket sender,
-                                       int code,
-                                       @Nonnull String reason) {
-        super(sender);
+    public ServerRequestedCloseException(int code,
+                                         @Nonnull String reason) {
+        super("Server requested connection to close, code=" + code + ", reason= " + reason);
         this.code = code;
         this.reason = reason;
     }
 
-    @Override
-    public String toString() {
-        return "RxEventServerRequestedClose{" +
-                "code=" + code +
-                ", reason='" + reason + '\'' +
-                '}';
+    /**
+     * Code why close requested
+     * @return code why close requested
+     */
+    public int code() {
+        return code;
     }
+
+    /**
+     * Reason why close requested
+     * @return reason why close requested or empty string
+     */
+    @Nonnull
+    public String reason() {
+        return reason;
+    }
+
 }

@@ -93,6 +93,8 @@ public class RxObjectWebSockets {
                                 } else if (rxEvent instanceof RxEventBinaryMessage) {
                                     final RxEventBinaryMessage binaryMessage = (RxEventBinaryMessage) rxEvent;
                                     subscriber.onNext(parseMessage(binaryMessage));
+                                } else {
+                                    throw new RuntimeException("Unknown message type");
                                 }
                             }
 
