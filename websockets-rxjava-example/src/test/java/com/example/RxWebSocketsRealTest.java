@@ -18,8 +18,8 @@ package com.example;
 
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.messages.RxEvent;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 import org.junit.Before;
 import org.junit.Ignore;

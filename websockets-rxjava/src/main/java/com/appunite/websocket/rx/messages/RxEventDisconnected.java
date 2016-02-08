@@ -23,7 +23,7 @@ import javax.annotation.Nonnull;
 /**
  * Event indicate that client was disconnected to the server
  *
- * since then all execution on previously returned {@link com.squareup.okhttp.ws.WebSocket} will cause throwing
+ * since then all execution on previously returned {@link okhttp3.ws.WebSocket} will cause throwing
  * {@link java.io.IOException}
  */
 public class RxEventDisconnected extends RxEvent {

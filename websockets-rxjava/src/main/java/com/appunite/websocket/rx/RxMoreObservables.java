@@ -21,14 +21,15 @@ import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
 import com.appunite.websocket.rx.object.messages.RxObjectEventConn;
 import com.appunite.websocket.rx.messages.RxEventConn;
-import com.squareup.okhttp.ws.WebSocket;
+
+import okhttp3.RequestBody;
+import okhttp3.ws.WebSocket;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
-import okio.Buffer;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
@@ -48,7 +49,7 @@ public class RxMoreObservables {
             public void call(Subscriber<? super Object> subscriber) {
                 try {
                     logger.log(Level.FINE, "sendStringMessage: {0}", message);
-                    sender.sendMessage(WebSocket.PayloadType.TEXT, new Buffer().writeUtf8(message));
+                    sender.sendMessage(RequestBody.create(WebSocket.TEXT, message));
                     subscriber.onNext(new Object());
                     subscriber.onCompleted();
                 } catch (Exception e) {

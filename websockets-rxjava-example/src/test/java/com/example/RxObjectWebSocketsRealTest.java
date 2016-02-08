@@ -23,8 +23,8 @@ import com.example.model.Message;
 import com.example.model.MessageType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 import org.junit.Before;
 import org.junit.Ignore;

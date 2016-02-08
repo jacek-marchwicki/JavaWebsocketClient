@@ -28,13 +28,14 @@ import com.appunite.websocket.rx.object.messages.RxObjectEventWrongBinaryMessage
 import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
 import com.appunite.websocket.rx.object.messages.RxObjectEventWrongStringMessageFormat;
 import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
-import com.squareup.okhttp.ws.WebSocket;
+
+import okhttp3.RequestBody;
+import okhttp3.ws.WebSocket;
 
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
-import okio.Buffer;
 import rx.Observable;
 import rx.Subscriber;
 
@@ -131,11 +132,11 @@ public class RxObjectWebSockets {
             public void sendObjectMessage(@Nonnull Object message) throws IOException,
                     ObjectParseException {
                 if (objectSerializer.isBinary(message)) {
-                    sender.sendMessage(WebSocket.PayloadType.BINARY,
-                            new Buffer().write(objectSerializer.deserializeBinary(message)));
+                    sender.sendMessage(RequestBody.create(WebSocket.BINARY,
+                            objectSerializer.deserializeBinary(message)));
                 } else {
-                    sender.sendMessage(WebSocket.PayloadType.TEXT,
-                            new Buffer().writeUtf8(objectSerializer.deserializeString(message)));
+                    sender.sendMessage(RequestBody.create(WebSocket.TEXT,
+                            objectSerializer.deserializeString(message)));
                 }
             }
         };

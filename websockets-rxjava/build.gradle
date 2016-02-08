@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.squareup.okhttp:okhttp-ws:2.5.0'
+    compile 'com.squareup.okhttp3:okhttp-ws:3.1.1'
     compile "io.reactivex:rxjava:1.0.9"
     compile "com.google.code.findbugs:jsr305:2.0.1"
 
@@ -46,7 +46,7 @@ signing {
 }
 group = "com.appunite"
 archivesBaseName = "websockets-rxjava"
-version = "3.0.1"
+version = "4.0.0"
 
 if (!project.hasProperty("ossrhUsername")) {
     project.ext.setProperty("ossrhUsername", null)
