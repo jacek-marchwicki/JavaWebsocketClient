@@ -2,7 +2,7 @@
 JavaWebsocketClient is library is simple library for Websocket connection in rx for java and Android.
 It is designed to be fast and fault tolerant.
 
-Currently we use okhttp for websocket connection because okhttp is simple and well tested solution.
+Currently we use okhttp3 for websocket connection because okhttp3 is simple and well tested solution.
 
 [![Build Status](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient.svg?branch=master)](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient)
 [![Build Status](https://gitlab-ci.appunite.net/projects/33/status.png?ref=master)](https://gitlab-ci.appunite.net/projects/33?ref=master)
@@ -100,7 +100,7 @@ To run example first run [websocket server](websockets-server/README.md), than u
 to your gradle file:
 
 ```groovy
-compile "com.appunite:websockets-rxjava:3.0.0"
+compile "com.appunite:websockets-rxjava:4.0.0"
 ```
 		
 ## License

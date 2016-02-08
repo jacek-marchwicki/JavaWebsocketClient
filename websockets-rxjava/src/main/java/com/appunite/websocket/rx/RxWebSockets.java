@@ -23,12 +23,13 @@ import com.appunite.websocket.rx.messages.RxEventConnected;
 import com.appunite.websocket.rx.messages.RxEventDisconnected;
 import com.appunite.websocket.rx.messages.RxEventPong;
 import com.appunite.websocket.rx.messages.RxEventStringMessage;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ws.WebSocket;
-import com.squareup.okhttp.ws.WebSocketCall;
-import com.squareup.okhttp.ws.WebSocketListener;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.ws.WebSocket;
+import okhttp3.ws.WebSocketCall;
+import okhttp3.ws.WebSocketListener;
 
 import java.io.IOException;
 
@@ -36,7 +37,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import okio.Buffer;
-import okio.BufferedSource;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
@@ -122,19 +122,19 @@ public class RxWebSockets {
                     }
 
                     @Override
-                    public void onMessage(BufferedSource payload, WebSocket.PayloadType type) throws IOException {
+                    public void onMessage(ResponseBody message) throws IOException {
                         try {
                             final WebSocket sender = webSocketOrNull();
                             if (sender == null) {
                                 return;
                             }
-                            if (WebSocket.PayloadType.BINARY.equals(type)) {
-                                subscriber.onNext(new RxEventBinaryMessage(sender, payload.readByteArray()));
-                            } else if (WebSocket.PayloadType.TEXT.equals(type)) {
-                                subscriber.onNext(new RxEventStringMessage(sender, payload.readUtf8()));
+                            if (WebSocket.BINARY.equals(message.contentType())) {
+                                subscriber.onNext(new RxEventBinaryMessage(sender, message.bytes()));
+                            } else if (WebSocket.TEXT.equals(message.contentType())) {
+                                subscriber.onNext(new RxEventStringMessage(sender, message.string()));
                             }
                         } finally {
-                            payload.close();
+                            message.close();
                         }
                     }
 
