@@ -25,6 +25,7 @@ import com.appunite.websocket.rx.messages.RxEventPong;
 import com.appunite.websocket.rx.messages.RxEventStringMessage;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.ws.WebSocket;
@@ -62,7 +63,6 @@ public class RxWebSockets {
         this.request = request;
     }
 
-
     /**
      * Returns observable that connected to a websocket and returns {@link RxObjectEvent}'s
      *
@@ -91,7 +91,7 @@ public class RxWebSockets {
                                     subscriber.onNext(new RxEventDisconnected(e));
                                 }
                             } else {
-                                notifyConnected = webSocket;
+                                notifyConnected = new LockingWebSocket(webSocket);
                             }
                             webSocketItem = notifyConnected;
                         }
@@ -177,5 +177,36 @@ public class RxWebSockets {
                 webSocketCall.enqueue(listener);
             }
         });
+    }
+
+    /**
+     * Class that synchronizes writes to websocket
+     */
+    private static class LockingWebSocket implements WebSocket {
+        @Nonnull
+        private final WebSocket webSocket;
+
+        public LockingWebSocket(@Nonnull WebSocket webSocket) {
+            this.webSocket = webSocket;
+        }
+
+        @Override
+        public void sendMessage(RequestBody message) throws IOException {
+            synchronized (this) {
+                webSocket.sendMessage(message);
+            }
+        }
+
+        @Override
+        public void sendPing(Buffer payload) throws IOException {
+            synchronized (this) {
+                webSocket.sendPing(payload);
+            }
+        }
+
+        @Override
+        public void close(int code, String reason) throws IOException {
+            webSocket.close(code, reason);
+        }
     }
 }

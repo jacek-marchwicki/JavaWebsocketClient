@@ -100,7 +100,7 @@ To run example first run [websocket server](websockets-server/README.md), than u
 to your gradle file:
 
 ```groovy
-compile "com.appunite:websockets-rxjava:4.0.0"
+compile "com.appunite:websockets-rxjava:4.0.1"
 ```
 		
 ## License
