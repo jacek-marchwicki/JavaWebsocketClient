@@ -46,7 +46,7 @@ signing {
 }
 group = "com.appunite"
 archivesBaseName = "websockets-rxjava"
-version = "4.0.0"
+version = "4.0.1"
 
 if (!project.hasProperty("ossrhUsername")) {
     project.ext.setProperty("ossrhUsername", null)
