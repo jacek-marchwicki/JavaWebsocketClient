@@ -15,3 +15,4 @@ script: ./gradlew build
 
 after_script:
 - for f in "websockets-example/build/outputs/lint-results*.html"; do pandoc $f -t plain; done
+- for f in "websockets-rxjava-example/build/outputs/lint-results*.html"; do pandoc $f -t plain; done
