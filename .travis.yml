@@ -7,4 +7,11 @@ android:
     - android-22
     - extra-google-m2repository
     - extra-android-m2repository
+addons:
+  apt_packages:
+    - pandoc
+
 script: ./gradlew build
+
+after_script:
+- for f in "websockets-example/build/outputs/lint-results*.html"; do pandoc $f -t plain; done
