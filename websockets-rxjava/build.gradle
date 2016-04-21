@@ -1,9 +1,10 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.android.tools.build:gradle:2.1.0-beta1'
     }
 }
 
@@ -11,8 +12,12 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {

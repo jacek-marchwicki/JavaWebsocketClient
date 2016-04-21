@@ -25,8 +25,10 @@ from twisted.web.server import Site
 from twisted.web.resource import Resource
 from autobahn.twisted.websocket import WebSocketServerFactory, \
     WebSocketServerProtocol
-from autobahn.twisted.resource import WebSocketResource, HTTPChannelHixie76Aware
+from autobahn.twisted.resource import WebSocketResource
 
+import txaio
+txaio.use_twisted()
 
 DELTA = timedelta(weeks=1)
 SAFE_WAIT = 3
@@ -58,7 +60,7 @@ def websocket_func(logger, host, port):
     class EchoServerProtocol(WebSocketServerProtocol):
 
         def __init__(self):
-            pass
+            super(EchoServerProtocol, self).__init__()
 
         def send_error(self, error_message):
             logger.error(error_message)
@@ -122,8 +124,8 @@ def websocket_func(logger, host, port):
 
     url = "ws://%s:%d" % (host, port)
 
-    factory = WebSocketServerFactory(url)
-    factory.protocol = EchoServerProtocol
+    factory = WebSocketServerFactory(url, debug=True, debugCodePaths=True)
+    factory.protocol = lambda: EchoServerProtocol()
     factory.setProtocolOptions(allowHixie76=True)
 
     resource = WebSocketResource(factory)
