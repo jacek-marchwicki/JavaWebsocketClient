@@ -7,8 +7,16 @@ commands for linux machine
 
 Docker image is available on dockerhub: [jacekmarchwicki/javawebsocketclient](https://hub.docker.com/r/jacekmarchwicki/javawebsocketclient/)
 
+Run docker in debug
+
 ```bash
-docker run --rm --tty --interactive --publish 8080:8080 --name javawebsocketclient jacekmarchwicki/javawebsocketclient javawebsocketclient --host 0.0.0.0 --port 8080 --stdio
+docker run --rm --tty --interactive --publish 8080:8080 --name javawebsocketclient jacekmarchwicki/javawebsocketclient websockets-server --host 0.0.0.0 --port 8080 --stdio
+```
+
+Run docker as a deamon:
+
+```bash
+docker run --detach --publish 8080:8080 --name javawebsocketclient jacekmarchwicki/javawebsocketclient websockets-server --host 0.0.0.0 --port 8080 --stdio
 ```
 
 ## Prepare
