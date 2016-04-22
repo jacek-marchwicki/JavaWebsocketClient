@@ -7,6 +7,8 @@ Currently we use okhttp3 for websocket connection because okhttp3 is simple and 
 [![Build Status](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient.svg?branch=master)](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient)
 [![Build Status](https://gitlab-ci.appunite.net/projects/33/status.png?ref=master)](https://gitlab-ci.appunite.net/projects/33?ref=master)
 
+![Presentation of example](imgs/presentation.gif)
+
 ## Content of the package
 
 * Example websockets server [python twisted server](websockets-server/README.md)
