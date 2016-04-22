@@ -148,7 +148,7 @@ public class MainActivity extends FragmentActivity {
 			final OkHttpClient okHttpClient = new OkHttpClient();
 			final RxWebSockets webSockets = new RxWebSockets(okHttpClient, new Request.Builder()
 					.get()
-					.url("ws://130.211.87.140:80/ws")
+					.url("ws://coreos2.appunite.net:8080/ws")
 					.addHeader("Sec-WebSocket-Protocol", "chat")
 					.build());
 			final GsonObjectSerializer serializer = new GsonObjectSerializer(gson, Message.class);
