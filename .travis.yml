@@ -1,20 +1,15 @@
 sudo: false
 language: android
+jdk: 
+ - oraclejdk8
 
 android:
   components:
     - tools
     - platform-tools
-    - build-tools-22.0.1
-    - android-22
+    - build-tools-25.0.2
+    - android-25
     - extra-google-m2repository
     - extra-android-m2repository
-addons:
-  apt_packages:
-    - pandoc
 
 script: ./gradlew build
-
-after_script:
-- for f in "websockets-example/build/outputs/lint-results*.html"; do pandoc $f -t plain; done
-- for f in "websockets-rxjava-example/build/outputs/lint-results*.html"; do pandoc $f -t plain; done

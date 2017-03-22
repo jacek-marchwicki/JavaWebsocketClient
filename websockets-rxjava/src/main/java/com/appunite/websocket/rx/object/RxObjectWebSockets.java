@@ -29,13 +29,11 @@ import com.appunite.websocket.rx.object.messages.RxObjectEventConnected;
 import com.appunite.websocket.rx.object.messages.RxObjectEventWrongStringMessageFormat;
 import com.appunite.websocket.rx.object.messages.RxObjectEventDisconnected;
 
-import okhttp3.RequestBody;
-import okhttp3.ws.WebSocket;
-
-import java.io.IOException;
+import okhttp3.WebSocket;
 
 import javax.annotation.Nonnull;
 
+import okio.ByteString;
 import rx.Observable;
 import rx.Subscriber;
 
@@ -129,14 +127,11 @@ public class RxObjectWebSockets {
     private ObjectWebSocketSender jsonSocketSender(@Nonnull final WebSocket sender) {
         return new ObjectWebSocketSender() {
             @Override
-            public void sendObjectMessage(@Nonnull Object message) throws IOException,
-                    ObjectParseException {
+            public boolean sendObjectMessage(@Nonnull Object message) throws ObjectParseException {
                 if (objectSerializer.isBinary(message)) {
-                    sender.sendMessage(RequestBody.create(WebSocket.BINARY,
-                            objectSerializer.deserializeBinary(message)));
+                    return sender.send(ByteString.of(objectSerializer.deserializeBinary(message)));
                 } else {
-                    sender.sendMessage(RequestBody.create(WebSocket.TEXT,
-                            objectSerializer.deserializeString(message)));
+                    return sender.send(objectSerializer.deserializeString(message));
                 }
             }
         };

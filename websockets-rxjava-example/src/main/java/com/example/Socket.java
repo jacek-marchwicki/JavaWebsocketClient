@@ -84,7 +84,13 @@ public class Socket {
                 .lift(LoggingObservables.<RxObjectEventConnected>loggingLift(LOGGER, "ConnectedEvent"));
 
         connectedMessage
-                .flatMap(new FlatMapToRegisterMessage())
+                .flatMap(new Func1<RxObjectEventConnected, Observable<?>>() {
+                    @Override
+                    public Observable<?> call(RxObjectEventConnected rxEventConn) {
+                        return RxMoreObservables.sendObjectMessage(rxEventConn.sender(), new RegisterMessage("asdf"))
+                                .toObservable();
+                    }
+                })
                 .lift(LoggingObservables.loggingOnlyErrorLift(LOGGER, "SendRegisterEvent"))
                 .onErrorReturn(com.example.MoreObservables.throwableToIgnoreError())
                 .subscribe();
@@ -123,8 +129,8 @@ public class Socket {
                 .flatMap(new Func1<RxObjectEventConn, Observable<?>>() {
                     @Override
                     public Observable<?> call(RxObjectEventConn rxEventConn) {
-                        return Observable.just(new PingMessage("send_only_when_connected"))
-                                .compose(RxMoreObservables.sendMessage(rxEventConn));
+                        return RxMoreObservables.sendObjectMessage(rxEventConn.sender(), new PingMessage("send_only_when_connected"))
+                                .toObservable();
                     }
                 })
                 .subscribe();
@@ -141,8 +147,8 @@ public class Socket {
                                 .flatMap(new Func1<RxObjectEventConn, Observable<?>>() {
                                     @Override
                                     public Observable<?> call(RxObjectEventConn rxEventConn) {
-                                        return Observable.just(new PingMessage("be_sure_to_send"))
-                                                .compose(RxMoreObservables.sendMessage(rxEventConn));
+                                        return RxMoreObservables.sendObjectMessage(rxEventConn.sender(), new PingMessage("be_sure_to_send"))
+                                                .toObservable();
                                     }
                                 });
                     }
@@ -190,7 +196,13 @@ public class Socket {
                     public Observable<DataMessage> call(final String messageId) {
 
                         final Observable<Object> sendMessageObservable = createMessage.call(messageId)
-                                .compose(RxMoreObservables.sendMessage(rxEventConn));
+                                .flatMap(new Func1<Object, Observable<?>>() {
+                                    @Override
+                                    public Observable<?> call(Object s) {
+                                        return RxMoreObservables.sendObjectMessage(rxEventConn.sender(), s)
+                                                .toObservable();
+                                    }
+                                });
 
                         final Observable<DataMessage> waitForResponseObservable = events
                                 .compose(com.example.MoreObservables.filterAndMap(RxObjectEventMessage.class))
@@ -238,11 +250,4 @@ public class Socket {
     }
 
 
-    private class FlatMapToRegisterMessage implements Func1<RxObjectEventConnected, Observable<Object>> {
-        @Override
-        public Observable<Object> call(RxObjectEventConnected rxEventConn) {
-            return Observable.just(new RegisterMessage("asdf"))
-                    .compose(RxMoreObservables.sendMessage(rxEventConn));
-        }
-    }
 }

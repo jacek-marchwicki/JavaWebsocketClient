@@ -185,7 +185,7 @@ public class MainPresenter {
                                     + ", " + wrongMessageFormat.exception().toString()));
                         } else if (rxObjectEvent instanceof RxObjectEventDisconnected) {
                             //noinspection ThrowableResultOfMethodCallIgnored
-                            final Exception exception = ((RxObjectEventDisconnected) rxObjectEvent).exception();
+                            final Throwable exception = ((RxObjectEventDisconnected) rxObjectEvent).exception();
                             if (!(exception instanceof InterruptedException)) {
                                 subscriber.onNext(new Pair<>("error", exception.toString()));
                             }

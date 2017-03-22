@@ -33,18 +33,20 @@ import javax.annotation.Nonnull;
  */
 public class RxObjectEventDisconnected extends RxObjectEvent {
     @Nonnull
-    private final IOException exception;
+    private final Throwable exception;
 
-    public RxObjectEventDisconnected(@Nonnull IOException exception) {
+    public RxObjectEventDisconnected(@Nonnull Throwable exception) {
         super();
         this.exception = exception;
     }
 
     /**
      * See: {@link RxEventDisconnected#exception()}
+     *
+     * @return exception that caused disconnection
      */
     @Nonnull
-    public IOException exception() {
+    public Throwable exception() {
         return exception;
     }
 
