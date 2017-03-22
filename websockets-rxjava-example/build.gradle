@@ -33,12 +33,12 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 25
     buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 22
+        targetSdkVersion 25
     }
     buildTypes {
         release {
@@ -47,6 +47,8 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage'
+        textOutput "stdout"
+        textReport true
     }
 
     compileOptions {
