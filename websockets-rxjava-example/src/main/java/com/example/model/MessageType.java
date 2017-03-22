@@ -46,7 +46,7 @@ public enum MessageType {
 
             final String asString = json.getAsString();
             try {
-                return MessageType.valueOf(asString.toUpperCase());
+                return MessageType.valueOf(asString.toUpperCase(Locale.US));
             } catch (IllegalArgumentException e) {
                 throw new JsonParseException("Unknown request type: " + asString);
             }

@@ -16,28 +16,21 @@
 
 package com.appunite.websocket.rx;
 
-import com.appunite.websocket.rx.object.messages.RxObjectEvent;
 import com.appunite.websocket.rx.messages.RxEvent;
 import com.appunite.websocket.rx.messages.RxEventBinaryMessage;
 import com.appunite.websocket.rx.messages.RxEventConnected;
 import com.appunite.websocket.rx.messages.RxEventDisconnected;
-import com.appunite.websocket.rx.messages.RxEventPong;
 import com.appunite.websocket.rx.messages.RxEventStringMessage;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okhttp3.ws.WebSocket;
-import okhttp3.ws.WebSocketCall;
-import okhttp3.ws.WebSocketListener;
-
-import java.io.IOException;
+import com.appunite.websocket.rx.object.messages.RxObjectEvent;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import okio.Buffer;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+import okio.ByteString;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action0;
@@ -72,141 +65,60 @@ public class RxWebSockets {
     public Observable<RxEvent> webSocketObservable() {
         return Observable.create(new Observable.OnSubscribe<RxEvent>() {
 
-            private final Object lock = new Object();
-            private WebSocket webSocketItem;
-            private boolean requestClose;
-
             @Override
             public void call(final Subscriber<? super RxEvent> subscriber) {
-                final WebSocketListener listener = new WebSocketListener() {
+                final WebSocket webSocket = client.newWebSocket(request, new WebSocketListener() {
                     @Override
                     public void onOpen(WebSocket webSocket, Response response) {
-                        final WebSocket notifyConnected;
-                        synchronized (lock) {
-                            if (requestClose) {
-                                notifyConnected = null;
-                                try {
-                                    webSocket.close(0, "Just disconnect");
-                                } catch (IOException e) {
-                                    subscriber.onNext(new RxEventDisconnected(e));
-                                }
-                            } else {
-                                notifyConnected = new LockingWebSocket(webSocket);
-                            }
-                            webSocketItem = notifyConnected;
-                        }
-                        if (notifyConnected != null) {
-                            subscriber.onNext(new RxEventConnected(notifyConnected));
-                        }
-                    }
-
-                    @Nullable
-                    WebSocket webSocketOrNull() {
-                        synchronized (lock) {
-                            return webSocketItem;
-                        }
+                        subscriber.onNext(new RxEventConnected(webSocket));
                     }
 
                     @Override
-                    public void onFailure(IOException e, Response response) {
-                        returnException(e);
-                    }
-
-                    private void returnException(IOException e) {
-                        subscriber.onNext(new RxEventDisconnected(e));
-                        subscriber.onError(e);
-                        synchronized (lock) {
-                            webSocketItem = null;
-                            requestClose = false;
-                        }
+                    public void onMessage(WebSocket webSocket, String text) {
+                        subscriber.onNext(new RxEventStringMessage(webSocket, text));
                     }
 
                     @Override
-                    public void onMessage(ResponseBody message) throws IOException {
-                        try {
-                            final WebSocket sender = webSocketOrNull();
-                            if (sender == null) {
-                                return;
-                            }
-                            if (WebSocket.BINARY.equals(message.contentType())) {
-                                subscriber.onNext(new RxEventBinaryMessage(sender, message.bytes()));
-                            } else if (WebSocket.TEXT.equals(message.contentType())) {
-                                subscriber.onNext(new RxEventStringMessage(sender, message.string()));
-                            }
-                        } finally {
-                            message.close();
-                        }
+                    public void onMessage(WebSocket webSocket, ByteString bytes) {
+                        subscriber.onNext(new RxEventBinaryMessage(webSocket, bytes.toByteArray()));
                     }
 
                     @Override
-                    public void onPong(Buffer payload) {final WebSocket sender = webSocketOrNull();
-                        if (sender == null) {
-                            return;
-                        }
-                        subscriber.onNext(new RxEventPong(sender, payload.readByteArray()));
-
+                    public void onClosing(WebSocket webSocket, int code, String reason) {
+                        super.onClosing(webSocket, code, reason);
+                        final ServerRequestedCloseException exception = new ServerRequestedCloseException(code, reason);
+                        subscriber.onNext(new RxEventDisconnected(exception));
+                        subscriber.onError(exception);
                     }
 
                     @Override
-                    public void onClose(int code, String reason) {
-                        returnException(new ServerRequestedCloseException(code, reason));
+                    public void onClosed(WebSocket webSocket, int code, String reason) {
+                        final ServerRequestedCloseException exception = new ServerRequestedCloseException(code, reason);
+                        subscriber.onNext(new RxEventDisconnected(exception));
+                        subscriber.onError(exception);
                     }
 
-                };
-                final WebSocketCall webSocketCall = WebSocketCall.create(client, request);
+                    @Override
+                    public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+                        if (response != null) {
+                            final ServerHttpError exception = new ServerHttpError(response);
+                            subscriber.onNext(new RxEventDisconnected(exception));
+                            subscriber.onError(exception);
+                        } else {
+                            subscriber.onNext(new RxEventDisconnected(t));
+                            subscriber.onError(t);
+                        }
+                    }
+                });
                 subscriber.add(Subscriptions.create(new Action0() {
                     @Override
                     public void call() {
-                        synchronized (lock) {
-                            if (webSocketItem != null) {
-                                try {
-                                    webSocketItem.close(0, "Just disconnect");
-                                } catch (IOException e) {
-                                    subscriber.onNext(new RxEventDisconnected(e));
-                                    subscriber.onError(e);
-                                }
-                                webSocketItem = null;
-                            } else {
-                                requestClose = true;
-                            }
-
-                        }
-                        webSocketCall.cancel();
+                        webSocket.close(1000, "Just disconnect");
+                        subscriber.onCompleted();
                     }
                 }));
-                webSocketCall.enqueue(listener);
             }
         });
     }
 
-    /**
-     * Class that synchronizes writes to websocket
-     */
-    private static class LockingWebSocket implements WebSocket {
-        @Nonnull
-        private final WebSocket webSocket;
-
-        public LockingWebSocket(@Nonnull WebSocket webSocket) {
-            this.webSocket = webSocket;
-        }
-
-        @Override
-        public void sendMessage(RequestBody message) throws IOException {
-            synchronized (this) {
-                webSocket.sendMessage(message);
-            }
-        }
-
-        @Override
-        public void sendPing(Buffer payload) throws IOException {
-            synchronized (this) {
-                webSocket.sendPing(payload);
-            }
-        }
-
-        @Override
-        public void close(int code, String reason) throws IOException {
-            webSocket.close(code, reason);
-        }
-    }
 }

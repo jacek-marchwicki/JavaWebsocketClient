@@ -16,7 +16,7 @@
 
 package com.appunite.websocket.rx.messages;
 
-import okhttp3.ws.WebSocket;
+import okhttp3.WebSocket;
 
 import javax.annotation.Nonnull;
 

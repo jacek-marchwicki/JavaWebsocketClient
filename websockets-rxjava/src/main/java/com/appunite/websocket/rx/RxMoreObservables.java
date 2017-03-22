@@ -19,21 +19,15 @@ package com.appunite.websocket.rx;
 import com.appunite.websocket.rx.object.ObjectSerializer;
 import com.appunite.websocket.rx.object.ObjectWebSocketSender;
 import com.appunite.websocket.rx.object.RxObjectWebSockets;
-import com.appunite.websocket.rx.object.messages.RxObjectEventConn;
-import com.appunite.websocket.rx.messages.RxEventConn;
 
-import okhttp3.RequestBody;
-import okhttp3.ws.WebSocket;
-
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.functions.Func1;
+import okhttp3.WebSocket;
+import rx.Single;
 
 public class RxMoreObservables {
 
@@ -42,91 +36,47 @@ public class RxMoreObservables {
     public RxMoreObservables() {
     }
 
-    @Nonnull
-    private static Observable<Object> sendMessage(final @Nonnull WebSocket sender, final @Nonnull String message) {
-        return Observable.create(new Observable.OnSubscribe<Object>() {
-            @Override
-            public void call(Subscriber<? super Object> subscriber) {
-                try {
-                    logger.log(Level.FINE, "sendStringMessage: {0}", message);
-                    sender.sendMessage(RequestBody.create(WebSocket.TEXT, message));
-                    subscriber.onNext(new Object());
-                    subscriber.onCompleted();
-                } catch (Exception e) {
-                    subscriber.onError(e);
-                }
-            }
-        });
-    }
-
     /**
-     * Transformer that convert String message to observable that returns if message was sent
+     * Enqueue message to send
      *
-     * @param connection connection event that is used to send message
-     * @return Observable that returns {@link Observer#onNext(Object)} with new Object()
-     *         and {@link Observer#onCompleted()} or {@link Observer#onError(Throwable)}
-     *
-     * @see #sendMessage(ObjectWebSocketSender, Object)
+     * @param sender connection event that is used to send message
+     * @param message message to send
+     * @return Single that returns true if message was enqueued
+     * @see #sendObjectMessage(ObjectWebSocketSender, Object)
      */
-    @SuppressWarnings("unused")
     @Nonnull
-    public static Observable.Transformer<String, Object> sendMessage(@Nonnull final RxEventConn connection) {
-        return new Observable.Transformer<String, Object>() {
+    public static Single<Boolean> sendMessage(final @Nonnull WebSocket sender, final @Nonnull String message) {
+        return Single.fromCallable(new Callable<Boolean>() {
             @Override
-            public Observable<Object> call(Observable<String> stringObservable) {
-                return stringObservable.flatMap(new Func1<String, Observable<?>>() {
-                    @Override
-                    public Observable<?> call(String message) {
-                        return sendMessage(connection.sender(), message);
-                    }
-                });
-            }
-        };
-    }
-
-    @Nonnull
-    private static Observable<Object> sendMessage(final @Nonnull ObjectWebSocketSender sender, final @Nonnull Object message) {
-        return Observable.create(new Observable.OnSubscribe<Object>() {
-            @Override
-            public void call(Subscriber<? super Object> subscriber) {
-                try {
-                    logger.log(Level.FINE, "sendStringMessage: {0}", message.toString());
-                    sender.sendObjectMessage(message);
-                    subscriber.onNext(new Object());
-                    subscriber.onCompleted();
-                } catch (Exception e) {
-                    subscriber.onError(e);
-                }
+            public Boolean call() throws Exception {
+                logger.log(Level.FINE, "sendStringMessage: {0}", message);
+                return sender.send(message);
             }
         });
     }
 
-
     /**
-     * Transformer that convert Object message to observable that returns if message was sent
-     *
+     * Send object
+     * <p>
      * Object is parsed via {@link ObjectSerializer} given by
      * {@link RxObjectWebSockets#RxObjectWebSockets(RxWebSockets, ObjectSerializer)}
      *
-     * @param connection connection event that is used to send message
-     * @return Observable that returns {@link Observer#onNext(Object)} with new Object()
-     *         and {@link Observer#onCompleted()} or {@link Observer#onError(Throwable)}
-     *
-     * @see #sendMessage(RxEventConn)
+     * @param sender connection event that is used to send message
+     * @param message message to serialize and sent
+     * @return Single that returns true if message was enqueued or ObjectParseException if couldn't
+     * serialize
+     * @see #sendMessage(WebSocket, String)
      */
-    @SuppressWarnings("unused")
     @Nonnull
-    public static Observable.Transformer<Object, Object> sendMessage(@Nonnull final RxObjectEventConn connection) {
-        return new Observable.Transformer<Object, Object>() {
+    public static Single<Boolean> sendObjectMessage(final @Nonnull ObjectWebSocketSender sender, final @Nonnull Object message) {
+        return Single.fromCallable(new Callable<Boolean>() {
             @Override
-            public Observable<Object> call(Observable<Object> stringObservable) {
-                return stringObservable.flatMap(new Func1<Object, Observable<?>>() {
-                    @Override
-                    public Observable<?> call(Object message) {
-                        return sendMessage(connection.sender(), message);
-                    }
-                });
+            public Boolean call() throws Exception {
+                logger.log(Level.FINE, "sendStringMessage: {0}", message);
+                return sender.sendObjectMessage(message);
             }
-        };
+        });
     }
+
+
 }

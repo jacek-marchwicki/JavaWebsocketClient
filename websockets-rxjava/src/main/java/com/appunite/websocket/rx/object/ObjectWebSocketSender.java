@@ -36,12 +36,9 @@ public interface ObjectWebSocketSender {
      *
      * @param message
      *            message to send
-     * @throws IOException
-     *             when exception occur while sending
      * @throws ObjectParseException
      *             when could not serialize object
-     * @throws IllegalStateException
-     *             if not connected, already closed, or another writer is active.
+     * @return boolean if message was scheduled to send
      */
-    void sendObjectMessage(@Nonnull Object message) throws IOException, ObjectParseException;
+    boolean sendObjectMessage(@Nonnull Object message) throws ObjectParseException;
 }

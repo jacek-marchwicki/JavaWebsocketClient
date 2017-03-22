@@ -16,22 +16,20 @@
 
 package com.appunite.websocket.rx.messages;
 
-import java.io.IOException;
-
 import javax.annotation.Nonnull;
 
 /**
  * Event indicate that client was disconnected to the server
  *
- * since then all execution on previously returned {@link okhttp3.ws.WebSocket} will cause throwing
+ * since then all execution on previously returned {@link okhttp3.WebSocket} will cause throwing
  * {@link java.io.IOException}
  */
 public class RxEventDisconnected extends RxEvent {
 
     @Nonnull
-    private IOException exception;
+    private Throwable exception;
 
-    public RxEventDisconnected(@Nonnull IOException exception) {
+    public RxEventDisconnected(@Nonnull Throwable exception) {
         super();
         this.exception = exception;
     }
@@ -39,11 +37,13 @@ public class RxEventDisconnected extends RxEvent {
     /**
      * Exception that caused disconnection.
      * If server requested disconnection it will be {@link com.appunite.websocket.rx.ServerRequestedCloseException}
+     * If server returned incorrect initialization response it will be {@link com.appunite.websocket.rx.ServerHttpError}
+     * If other unknown exception
      *
      * @return exception that caused disconnection
      */
     @Nonnull
-    public IOException exception() {
+    public Throwable exception() {
         return exception;
     }
 

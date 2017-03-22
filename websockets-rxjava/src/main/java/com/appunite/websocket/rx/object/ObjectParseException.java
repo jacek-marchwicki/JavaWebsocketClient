@@ -48,10 +48,4 @@ public class ObjectParseException extends Exception {
         super(cause);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public ObjectParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

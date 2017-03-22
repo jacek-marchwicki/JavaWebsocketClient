@@ -14,36 +14,34 @@
  * limitations under the License
  */
 
-package com.appunite.websocket.rx.messages;
+package com.appunite.websocket.rx;
 
-import okhttp3.WebSocket;
+import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+import okhttp3.Response;
+
 /**
- * Abstract class for binary messages returned by server
- *
- * @see RxEventBinaryMessage
- * @see RxEventPong
+ * Exception indicating that server requested close connection
  */
-public abstract class RxEventBinaryMessageAbs extends RxEventConn {
+public class ServerHttpError extends IOException {
 
     @Nonnull
-    private final byte[] message;
+    private final Response response;
 
-    public RxEventBinaryMessageAbs(@Nonnull WebSocket sender, @Nonnull byte[] message) {
-        super(sender);
-        this.message = message;
+    public ServerHttpError(@Nonnull Response response) {
+        super("Http server error=" + response.code() + ", message= " + response.message());
+        this.response = response;
     }
 
     /**
-     * Binary message that was returned by server
-     *
-     * @return binary message
+     * Response from server
+     * @return response why connection couldn't be established
      */
     @Nonnull
-    public byte[] message() {
-        return message;
+    public Response response() {
+        return response;
     }
 
 }
