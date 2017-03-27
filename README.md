@@ -6,6 +6,8 @@ Currently we use okhttp3 for websocket connection because okhttp3 is simple and 
 
 [![Build Status](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient.svg?branch=master)](https://travis-ci.org/jacek-marchwicki/JavaWebsocketClient)
 
+[![Release](https://jitpack.io/v/jacek-marchwicki/JavaWebsocketClient.svg)](https://jitpack.io/#jacek-marchwicki/JavaWebsocketClient)
+
 ![Presentation of example](imgs/presentation.gif)
 
 ## Content of the package
