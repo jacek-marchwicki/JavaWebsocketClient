@@ -101,7 +101,18 @@ To run example first run [websocket server](websockets-server/README.md), than u
 to your gradle file:
 
 ```groovy
-compile "com.appunite:websockets-rxjava:4.0.1"
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+
+    // snapshot version
+    compile 'com.github.jacek-marchwicki:JavaWebsocketClient:master-SNAPSHOT'
+
+    // or use specific version
+    compile 'com.github.jacek-marchwicki:JavaWebsocketClient:<look-on-release-tab>'
+}
 ```
 		
 ## License
