@@ -14,26 +14,19 @@
  * limitations under the License
  */
 
-package com.example.model;
+package com.example.model
 
-public class RegisteredMessage extends Message {
+class RegisteredMessage : Message(MessageType.REGISTERED) {
 
-    public RegisteredMessage() {
-        super(MessageType.REGISTERED);
+    override fun toString(): String {
+        return "RegisteredResponse{}"
     }
 
-    @Override
-    public String toString() {
-        return "RegisteredResponse{}";
+    override fun equals(o: Any?): Boolean {
+        return o is RegisteredMessage
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof RegisteredMessage;
-    }
-
-    @Override
-    public int hashCode() {
-        return 1;
+    override fun hashCode(): Int {
+        return 1
     }
 }

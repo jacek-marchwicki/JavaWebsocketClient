@@ -1,34 +1,39 @@
 buildscript {
     repositories {
+        google()
         mavenCentral()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 repositories {
+    google()
     mavenCentral()
     jcenter()
 }
 
 dependencies {
-    compile 'com.squareup.okhttp3:okhttp:3.5.0'
-    compile "io.reactivex:rxjava:1.1.0"
-    compile "com.google.code.findbugs:jsr305:2.0.1"
+    api 'com.squareup.okhttp3:okhttp:3.10.0'
+    api "io.reactivex.rxjava2:rxjava:2.2.4"
+    api "io.reactivex.rxjava2:rxkotlin:2.3.0"
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
 
-    testCompile "org.hamcrest:hamcrest-all:1.3"
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.mockito:mockito-all:1.9.5'
-    testCompile 'com.google.truth:truth:0.25'
+    testImplementation "org.hamcrest:hamcrest-all:1.3"
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-all:1.9.5'
+    testImplementation 'com.google.truth:truth:0.25'
 }
 
 task javadocJar(type: Jar) {

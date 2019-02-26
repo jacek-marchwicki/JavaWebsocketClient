@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
 import okhttp3.WebSocket;
-import rx.Single;
+import io.reactivex.Single;
 
 public class RxMoreObservables {
 

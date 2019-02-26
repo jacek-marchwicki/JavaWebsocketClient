@@ -34,13 +34,12 @@ import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
-import rx.schedulers.TestScheduler;
-import rx.subjects.TestSubject;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.TestScheduler;
+import io.reactivex.subjects.PublishSubject;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
@@ -60,8 +59,8 @@ public class SocketTest {
 
     private Socket socket;
 
-    private final TestScheduler testScheduler = Schedulers.test();
-    private final TestSubject<RxObjectEvent> connection = TestSubject.create(testScheduler);
+    private final TestScheduler testScheduler = new TestScheduler();
+    private final PublishSubject<RxObjectEvent> connection = PublishSubject.create();
 
     @Before
     public void setUp() throws Exception {
@@ -72,32 +71,32 @@ public class SocketTest {
 
     @Test
     public void testConnection_registerIsSent() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         try {
-            connection.onNext(new RxObjectEventConnected(sender), 0);
+            connection.onNext(new RxObjectEventConnected(sender));
             testScheduler.triggerActions();
             verify(sender).sendObjectMessage(new RegisterMessage("asdf"));
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     private void register() throws IOException, InterruptedException,
             ObjectParseException {
-        connection.onNext(new RxObjectEventConnected(sender), 0);
+        connection.onNext(new RxObjectEventConnected(sender));
         testScheduler.triggerActions();
         verify(sender).sendObjectMessage(new RegisterMessage("asdf"));
-        connection.onNext(new RxObjectEventMessage(sender, new RegisteredMessage()), 0);
+        connection.onNext(new RxObjectEventMessage(sender, new RegisteredMessage()));
         testScheduler.triggerActions();
     }
 
     @Test
     public void testWhenNoResponse_throwError() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         socket.sendMessageOnceWhenConnected(
-                new Func1<String, Observable<Object>>() {
+                new Function<String, Observable<Object>>() {
                     @Override
-                    public Observable<Object> call(String id) {
+                    public Observable<Object> apply(String id) {
                         return Observable.<Object>just(new DataMessage(id, "krowa"));
                     }
                 })
@@ -110,17 +109,17 @@ public class SocketTest {
 
             verify(dataObserver).onError(any(Throwable.class));
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     @Test
     public void testWhenResponseOnDifferentMessage_throwError() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         socket.sendMessageOnceWhenConnected(
-                new Func1<String, Observable<Object>>() {
+                new Function<String, Observable<Object>>() {
                     @Override
-                    public Observable<Object> call(String id) {
+                    public Observable<Object> apply(String id) {
                         return Observable.<Object>just(new DataMessage(id, "krowa"));
                     }
                 })
@@ -129,22 +128,22 @@ public class SocketTest {
             register();
             verify(sender).sendObjectMessage(new DataMessage("0", "krowa"));
 
-            connection.onNext(new RxObjectEventMessage(sender, new DataMessage("100", "asdf")), 0);
+            connection.onNext(new RxObjectEventMessage(sender, new DataMessage("100", "asdf")));
             testScheduler.advanceTimeBy(10, TimeUnit.SECONDS);
 
             verify(dataObserver).onError(any(Throwable.class));
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     @Test
     public void testWhenResponse_messageSuccess() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         socket.sendMessageOnceWhenConnected(
-                new Func1<String, Observable<Object>>() {
+                new Function<String, Observable<Object>>() {
                     @Override
-                    public Observable<Object> call(String id) {
+                    public Observable<Object> apply(String id) {
                         return Observable.<Object>just(new DataMessage(id, "krowa"));
                     }
                 })
@@ -153,40 +152,40 @@ public class SocketTest {
             register();
             verify(sender).sendObjectMessage(new DataMessage("0", "krowa"));
 
-            connection.onNext(new RxObjectEventMessage(sender, new DataMessage("0", "asdf")), 0);
+            connection.onNext(new RxObjectEventMessage(sender, new DataMessage("0", "asdf")));
             testScheduler.advanceTimeBy(10, TimeUnit.SECONDS);
 
             verify(dataObserver).onNext(new DataMessage("0", "asdf"));
-            verify(dataObserver).onCompleted();
+            verify(dataObserver).onComplete();
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     @Test
     public void testAfterConnection_registerSuccess() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         try {
             register();
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     @Test
     public void testConnectionSuccessAfterAWhile_registerSuccess() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         try {
             testScheduler.advanceTimeBy(30, TimeUnit.SECONDS);
             register();
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     @Test
     public void testWhenTimePassBeforeConnection_sendAllPings() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         socket.sendPingEvery5seconds();
         try {
             testScheduler.advanceTimeBy(30, TimeUnit.SECONDS);
@@ -195,13 +194,13 @@ public class SocketTest {
 
             verify(sender, times(6)).sendObjectMessage(new PingMessage("be_sure_to_send"));
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 
     @Test
     public void testWhenTimePassBeforeConnection_sendPingOnlyOnce() throws Exception {
-        final Subscription subscribe = socket.connection().subscribe(observer);
+       final Disposable subscribe = socket.connection().test();
         socket.sendPingWhenConnected();
         try {
             testScheduler.advanceTimeBy(30, TimeUnit.SECONDS);
@@ -210,7 +209,7 @@ public class SocketTest {
 
             verify(sender).sendObjectMessage(new PingMessage("send_only_when_connected"));
         } finally {
-            subscribe.unsubscribe();
+            subscribe.dispose();
         }
     }
 }

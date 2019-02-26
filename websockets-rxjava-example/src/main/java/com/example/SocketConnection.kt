@@ -14,15 +14,12 @@
  * limitations under the License
  */
 
-package com.example;
+package com.example
 
-import com.appunite.websocket.rx.object.messages.RxObjectEvent;
+import com.appunite.websocket.rx.`object`.messages.RxObjectEvent
 
-import javax.annotation.Nonnull;
+import io.reactivex.Observable
 
-import rx.Observable;
-
-public interface SocketConnection {
-    @Nonnull
-    Observable<RxObjectEvent> connection();
+interface SocketConnection {
+    fun connection(): Observable<RxObjectEvent>
 }

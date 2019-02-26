@@ -24,6 +24,9 @@ import com.example.model.Message;
 import com.example.model.MessageType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -33,10 +36,8 @@ import org.junit.Test;
 
 import java.util.logging.Logger;
 
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 
 public class SocketRealTest {
 
@@ -64,21 +65,21 @@ public class SocketRealTest {
     @Test
     @Ignore
     public void testName() throws Exception {
-        socket.sendMessageOnceWhenConnected(new Func1<String, Observable<Object>>() {
+        socket.sendMessageOnceWhenConnected(new Function<String, Observable<Object>>() {
             @Override
-            public Observable<Object> call(String messageId) {
+            public Observable<Object> apply(String messageId) {
                 return Observable.<Object>just(new DataMessage(messageId, "some message"));
             }
         })
-                .subscribe(LoggingObservables.logging(Logger.getLogger("Rx"), "SendMessage"));
+                .subscribe(LoggingObservables.INSTANCE.logging(Logger.getLogger("Rx"), "SendMessage"));
 
         socket.sendPingWhenConnected();
         socket.sendPingEvery5seconds();
-        final Subscription subscribe = socket.connection()
+        final Disposable subscribe = socket.connection()
                 .subscribeOn(Schedulers.io())
                 .subscribe();
         Thread.sleep(10000);
-        subscribe.unsubscribe();
+        subscribe.dispose();
         Thread.sleep(10000);
     }
 

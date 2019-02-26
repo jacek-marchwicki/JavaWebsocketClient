@@ -14,30 +14,24 @@
  * the License.
  */
 
-package com.appunite.detector;
+package com.appunite.detector
 
-import javax.annotation.Nonnull;
+class SimpleDetector<T : SimpleDetector.Detectable<T>> : ChangesDetector.Detector<T, T> {
 
-public class SimpleDetector<T extends SimpleDetector.Detectable<T>> implements ChangesDetector.Detector<T, T> {
-
-    public static interface Detectable<T> {
-        public boolean matches(@Nonnull T item);
-        public boolean same(@Nonnull T item);
+    interface Detectable<T> {
+        fun matches(item: T): Boolean
+        fun same(item: T): Boolean
     }
 
-    @Nonnull
-    @Override
-    public T apply(@Nonnull T item) {
-        return item;
+    override fun apply(item: T?): T? {
+        return item
     }
 
-    @Override
-    public boolean matches(@Nonnull T item, @Nonnull T newOne) {
-        return item.matches(newOne);
+    override fun matches(item: T, newOne: T): Boolean {
+        return item.matches(newOne)
     }
 
-    @Override
-    public boolean same(@Nonnull T item, @Nonnull T newOne) {
-        return item.same(newOne);
+    override fun same(item: T, newOne: T): Boolean {
+        return item.same(newOne)
     }
 }

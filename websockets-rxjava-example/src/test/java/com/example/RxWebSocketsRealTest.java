@@ -18,6 +18,9 @@ package com.example;
 
 import com.appunite.websocket.rx.RxWebSockets;
 import com.appunite.websocket.rx.messages.RxEvent;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -25,9 +28,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class RxWebSocketsRealTest {
 
@@ -47,17 +48,17 @@ public class RxWebSocketsRealTest {
     @Test
     @Ignore
     public void testName() throws Exception {
-        final Subscription subscribe = socket.webSocketObservable()
+        final Disposable subscribe = socket.webSocketObservable()
                 .subscribeOn(Schedulers.io())
-                .doOnNext(new Action1<RxEvent>() {
+                .doOnNext(new Consumer<RxEvent>() {
                     @Override
-                    public void call(RxEvent rxEvent) {
+                    public void accept(RxEvent rxEvent) {
                         System.out.println("Event: " + rxEvent);
                     }
                 })
                 .subscribe();
         Thread.sleep(5000);
-        subscribe.unsubscribe();
+        subscribe.dispose();
         Thread.sleep(5000);
     }
 

@@ -23,6 +23,8 @@ import com.example.model.Message;
 import com.example.model.MessageType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import io.reactivex.disposables.Disposable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -30,8 +32,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import rx.Subscription;
-import rx.schedulers.Schedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class RxObjectWebSocketsRealTest {
 
@@ -56,11 +57,11 @@ public class RxObjectWebSocketsRealTest {
     @Test
     @Ignore
     public void testName() throws Exception {
-        final Subscription subscribe = socket.webSocketObservable()
+        final Disposable subscribe = socket.webSocketObservable()
                 .subscribeOn(Schedulers.io())
                 .subscribe();
         Thread.sleep(5000);
-        subscribe.unsubscribe();
+        subscribe.dispose();
         Thread.sleep(5000);
     }
 

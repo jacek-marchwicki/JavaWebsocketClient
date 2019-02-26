@@ -16,13 +16,11 @@
 
 package com.example;
 
-import rx.Observable.Operator;
-import rx.Observer;
-import rx.Subscriber;
-import rx.exceptions.Exceptions;
-import rx.exceptions.OnErrorThrowable;
+import io.reactivex.ObservableOperator;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
-public class OperatorDoOnNext<T> implements Operator<T, T> {
+public class OperatorDoOnNext<T> implements ObservableOperator<T, T> {
     private final Observer<? super T> doOnNextObserver;
 
     public OperatorDoOnNext(Observer<? super T> doOnNextObserver) {
@@ -30,20 +28,26 @@ public class OperatorDoOnNext<T> implements Operator<T, T> {
     }
 
     @Override
-    public Subscriber<? super T> call(final Subscriber<? super T> observer) {
-        return new Subscriber<T>(observer) {
+    public Observer<? super T> apply(Observer<? super T> observer) throws Exception {
+        return new Observer<T>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
 
             @Override
-            public void onCompleted() {
+            public void onNext(T t) {
+                doOnNextObserver.onNext(t);
             }
 
             @Override
             public void onError(Throwable e) {
+
             }
 
             @Override
-            public void onNext(T value) {
-                doOnNextObserver.onNext(value);
+            public void onComplete() {
+
             }
         };
     }
